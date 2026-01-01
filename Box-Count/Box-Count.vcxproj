@@ -132,10 +132,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Box-Count.cpp" />
+    <ClCompile Include="Bak-Box-Count.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="VideoCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Notes\HSV-Colors.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Box.hpp" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="CircQueue.hpp" />
+    <ClInclude Include="NoCopyMove.h" />
+    <ClInclude Include="VideoCapture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

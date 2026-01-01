@@ -19,9 +19,18 @@
     <Filter Include="OpenCV">
       <UniqueIdentifier>{ec5ddef4-8ef2-4dd6-9814-9ee418071184}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{eea5eb84-0227-458e-8610-bfecbcff93e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Box-Count.cpp">
+    <ClCompile Include="Bak-Box-Count.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoCapture.cpp">
+      <Filter>OpenCV</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,5 +38,22 @@
     <Text Include="..\Notes\HSV-Colors.txt">
       <Filter>Notes</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NoCopyMove.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CircQueue.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoCapture.h">
+      <Filter>OpenCV</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -245,11 +245,12 @@ void draw_boxes(cv::Mat& frame, const std::vector<cv::Rect>& boxes)
 }
 
 // -------------------- main --------------------
-int main(int, char* [])
+int main_tmp(int, char* [])
 {
 	try
 	{
-		cv::VideoCapture cap("assets/sample1.mp4");
+		//cv::VideoCapture cap("assets/sample1.mp4");
+		cv::VideoCapture cap(1);
 
 		if (not cap.isOpened())
 		{
