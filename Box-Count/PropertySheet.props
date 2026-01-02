@@ -3,6 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <OpenCVSuffix>d</OpenCVSuffix>
+    <WXSuffix>d</WXSuffix>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>Project</_PropertySheetDisplayName>
@@ -11,6 +12,10 @@
   <ItemGroup>
     <BuildMacro Include="OpenCVSuffix">
       <Value>$(OpenCVSuffix)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="WXSuffix">
+      <Value>$(WXSuffix)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

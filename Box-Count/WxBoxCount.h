@@ -28,14 +28,14 @@
 #include <wx/statbmp.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
-#include <wx/panel.h>
+#include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Class panel_box_count
+/// Class BoxCountFrame
 ///////////////////////////////////////////////////////////////////////////////
-class panel_box_count : public wxPanel
+class BoxCountFrame : public wxFrame
 {
 	private:
 
@@ -48,19 +48,21 @@ class panel_box_count : public wxPanel
 		wxDatePickerCtrl* picker_doc_date;
 		wxStaticText* m_staticText90;
 		wxTextCtrl* text_start_time;
+		wxStaticText* m_staticText11;
+		wxTextCtrl* text_elapsed;
 		wxStaticText* m_staticText91;
 		wxTextCtrl* text_end_time;
 		wxStaticText* m_staticText92;
-		wxTextCtrl* m_textCtrl74;
+		wxTextCtrl* text_box_count;
 		wxStaticBitmap* bitmap_last_box_count;
 		wxStaticText* m_staticText93;
-		wxTextCtrl* text_reject;
+		wxTextCtrl* text_reject_count;
 		wxStaticBitmap* bitmap_last_reject_count;
 		wxStaticText* m_staticText94;
-		wxTextCtrl* text_return;
+		wxTextCtrl* text_return_count;
 		wxStaticBitmap* bitmap_last_return_count;
 		wxStaticText* m_staticText96;
-		wxStaticBitmap* m_bitmap6;
+		wxStaticBitmap* bitmap_preview;
 		wxStaticText* m_staticText97;
 		wxChoice* choice_camera;
 		wxButton* button_calibrate_roi;
@@ -70,19 +72,21 @@ class panel_box_count : public wxPanel
 		wxButton* button_new;
 		wxButton* button_start;
 		wxButton* button_stop;
+		wxButton* button_close;
 
 		// Virtual event handlers, override them in your derived class
 		virtual void on_button_preview_cam_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_new_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_start_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_stop_( wxCommandEvent& event ) { event.Skip(); }
+		virtual void on_button_close_( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
 
-		panel_box_count( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 900,510 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
+		BoxCountFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Box Count"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 900,550 ), long style = wxCAPTION|wxSYSTEM_MENU|wxTAB_TRAVERSAL );
 
-		~panel_box_count();
+		~BoxCountFrame();
 
 };
 

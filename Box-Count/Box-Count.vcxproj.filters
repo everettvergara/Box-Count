@@ -22,16 +22,28 @@
     <Filter Include="Core">
       <UniqueIdentifier>{eea5eb84-0227-458e-8610-bfecbcff93e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Wx">
+      <UniqueIdentifier>{3e57ebc7-72fa-4bde-9d50-fda760a73a4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Configs">
+      <UniqueIdentifier>{b13b3e0f-d8f3-4999-8b54-2ee395933971}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bak-Box-Count.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VideoCapture.cpp">
-      <Filter>OpenCV</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WxBoxCount.cpp">
+      <Filter>Wx</Filter>
+    </ClCompile>
+    <ClCompile Include="WxBoxCountFrame.cpp">
+      <Filter>Wx</Filter>
+    </ClCompile>
+    <ClCompile Include="MotionDetection.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -49,11 +61,28 @@
     <ClInclude Include="CircQueue.hpp">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="VideoCapture.h">
-      <Filter>OpenCV</Filter>
-    </ClInclude>
     <ClInclude Include="Box.hpp">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="WxBoxCount.h">
+      <Filter>Wx</Filter>
+    </ClInclude>
+    <ClInclude Include="WxApp.hpp">
+      <Filter>Wx</Filter>
+    </ClInclude>
+    <ClInclude Include="WxBoxCountFrame.h">
+      <Filter>Wx</Filter>
+    </ClInclude>
+    <ClInclude Include="Data.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MotionDetection.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Debug\config\cams.json">
+      <Filter>Configs</Filter>
+    </None>
   </ItemGroup>
 </Project>

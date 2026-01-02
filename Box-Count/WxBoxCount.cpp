@@ -9,8 +9,11 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name ) : wxPanel( parent, id, pos, size, style, name )
+BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
+
 	wxBoxSizer* sizer_main;
 	sizer_main = new wxBoxSizer( wxVERTICAL );
 
@@ -57,6 +60,15 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 
 	sizer_fields->Add( text_start_time, 0, wxALL, 5 );
 
+	m_staticText11 = new wxStaticText( group_document->GetStaticBox(), wxID_ANY, _("Elapsed (secs):"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText11->Wrap( -1 );
+	sizer_fields->Add( m_staticText11, 0, wxALL, 5 );
+
+	text_elapsed = new wxTextCtrl( group_document->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	text_elapsed->Enable( false );
+
+	sizer_fields->Add( text_elapsed, 0, wxALL, 5 );
+
 	m_staticText91 = new wxStaticText( group_document->GetStaticBox(), wxID_ANY, _("End Time:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText91->Wrap( -1 );
 	sizer_fields->Add( m_staticText91, 0, wxALL, 5 );
@@ -87,11 +99,11 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	wxBoxSizer* sizer_box_count;
 	sizer_box_count = new wxBoxSizer( wxHORIZONTAL );
 
-	m_textCtrl74 = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
-	m_textCtrl74->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
-	m_textCtrl74->SetForegroundColour( wxColour( 0, 0, 255 ) );
+	text_box_count = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
+	text_box_count->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
+	text_box_count->SetForegroundColour( wxColour( 0, 0, 255 ) );
 
-	sizer_box_count->Add( m_textCtrl74, 0, wxALL, 5 );
+	sizer_box_count->Add( text_box_count, 0, wxALL, 5 );
 
 	bitmap_last_box_count = new wxStaticBitmap( group_count->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 160,100 ), 0 );
 	sizer_box_count->Add( bitmap_last_box_count, 0, wxALL, 5 );
@@ -106,11 +118,11 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	wxBoxSizer* sizer_reject_count;
 	sizer_reject_count = new wxBoxSizer( wxHORIZONTAL );
 
-	text_reject = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
-	text_reject->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
-	text_reject->SetForegroundColour( wxColour( 255, 0, 0 ) );
+	text_reject_count = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
+	text_reject_count->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
+	text_reject_count->SetForegroundColour( wxColour( 255, 0, 0 ) );
 
-	sizer_reject_count->Add( text_reject, 0, wxALL, 5 );
+	sizer_reject_count->Add( text_reject_count, 0, wxALL, 5 );
 
 	bitmap_last_reject_count = new wxStaticBitmap( group_count->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 160,100 ), 0 );
 	sizer_reject_count->Add( bitmap_last_reject_count, 0, wxALL, 5 );
@@ -125,11 +137,11 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	wxBoxSizer* sizer_return_count;
 	sizer_return_count = new wxBoxSizer( wxHORIZONTAL );
 
-	text_return = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
-	text_return->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
-	text_return->SetForegroundColour( wxColour( 255, 0, 0 ) );
+	text_return_count = new wxTextCtrl( group_count->GetStaticBox(), wxID_ANY, _("0"), wxDefaultPosition, wxSize( 150,100 ), wxTE_CENTER|wxTE_READONLY );
+	text_return_count->SetFont( wxFont( 64, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
+	text_return_count->SetForegroundColour( wxColour( 255, 0, 0 ) );
 
-	sizer_return_count->Add( text_return, 0, wxALL, 5 );
+	sizer_return_count->Add( text_return_count, 0, wxALL, 5 );
 
 	bitmap_last_return_count = new wxStaticBitmap( group_count->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 160,100 ), 0 );
 	sizer_return_count->Add( bitmap_last_return_count, 0, wxALL, 5 );
@@ -155,10 +167,10 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	m_staticText96->Wrap( -1 );
 	sizer_live->Add( m_staticText96, 0, wxALL, 5 );
 
-	m_bitmap6 = new wxStaticBitmap( group_live->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 320,200 ), 0 );
-	sizer_live->Add( m_bitmap6, 0, wxALL, 5 );
+	bitmap_preview = new wxStaticBitmap( group_live->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 320,200 ), 0 );
+	sizer_live->Add( bitmap_preview, 0, wxALL, 5 );
 
-	m_staticText97 = new wxStaticText( group_live->GetStaticBox(), wxID_ANY, _("Select a Camera:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText97 = new wxStaticText( group_live->GetStaticBox(), wxID_ANY, _("Select Camera Index:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText97->Wrap( -1 );
 	sizer_live->Add( m_staticText97, 0, wxALL, 5 );
 
@@ -209,6 +221,12 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	sizer_buttons->Add( button_stop, 0, wxALL, 5 );
 
 
+	sizer_buttons->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	button_close = new wxButton( group_buttons->GetStaticBox(), wxID_ANY, _("Close"), wxDefaultPosition, wxDefaultSize, 0 );
+	sizer_buttons->Add( button_close, 0, wxALL, 5 );
+
+
 	group_buttons->Add( sizer_buttons, 1, wxEXPAND, 5 );
 
 
@@ -218,13 +236,16 @@ panel_box_count::panel_box_count( wxWindow* parent, wxWindowID id, const wxPoint
 	this->SetSizer( sizer_main );
 	this->Layout();
 
+	this->Centre( wxBOTH );
+
 	// Connect Events
-	button_calibrate_roi->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( panel_box_count::on_button_preview_cam_ ), NULL, this );
-	button_new->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( panel_box_count::on_button_new_ ), NULL, this );
-	button_start->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( panel_box_count::on_button_start_ ), NULL, this );
-	button_stop->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( panel_box_count::on_button_stop_ ), NULL, this );
+	button_calibrate_roi->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_preview_cam_ ), NULL, this );
+	button_new->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_new_ ), NULL, this );
+	button_start->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_start_ ), NULL, this );
+	button_stop->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_stop_ ), NULL, this );
+	button_close->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_close_ ), NULL, this );
 }
 
-panel_box_count::~panel_box_count()
+BoxCountFrame::~BoxCountFrame()
 {
 }

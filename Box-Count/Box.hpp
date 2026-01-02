@@ -3,14 +3,15 @@
 #include "NoCopyMove.h"
 #include <opencv2/opencv.hpp>
 #include <ctime>
-#include <vector>
+#include <unordered_map>
 
 namespace eg::bc
 {
 	// TODO: Move this to json
-	constexpr size_t k_max_center_points = 30;
+	constexpr size_t k_max_center_points = 64;
 	constexpr size_t k_max_frame_count = k_max_center_points;
 	constexpr size_t k_max_history = 4;
+	constexpr size_t k_no_frame_update_expire = 5;
 
 	enum class BoxStatus
 	{
@@ -18,65 +19,106 @@ namespace eg::bc
 		Counted,		// Moved from bottom to middle; left to middle to top; right to middle to top
 		Rejected,		// Moved from bottom to middle to either left or right
 		Returned,		// Moved from top to middle to either left or right
-		Discarded,		// The should-be status after the box has been counted, rejected, or returned
 		Unknown			// Does not fit any known status
 	};
 
-	enum BoxPolicyArea : size_t
+	enum class BoxPolicyArea : size_t
 	{
-		Bottom = 0,
-		Middle = 1,
-		Top = 2,
-		Left = 3,
-		Right = 4,
+		Bottom,
+		Middle,
+		Top,
+		Left,
+		Right,
 		Unknown
 	};
+}
+
+namespace std
+{
+	template<>
+	struct hash<eg::bc::BoxPolicyArea>
+	{
+		size_t operator()(const eg::bc::BoxPolicyArea v) const noexcept
+		{
+			return static_cast<size_t>(v);
+		}
+	};
+}
+
+namespace eg::bc
+{
+	//// TODO: Move this to json
+	//constexpr size_t k_max_center_points = 30;
+	//constexpr size_t k_max_frame_count = k_max_center_points;
+	//constexpr size_t k_max_history = 4;
+
+	//enum class BoxStatus
+	//{
+	//	Tracking,
+	//	Counted,		// Moved from bottom to middle; left to middle to top; right to middle to top
+	//	Rejected,		// Moved from bottom to middle to either left or right
+	//	Returned,		// Moved from top to middle to either left or right
+	//	Discarded,		// The should-be status after the box has been counted, rejected, or returned
+	//	Unknown			// Does not fit any known status
+	//};
+
+	//enum class BoxPolicyArea : size_t
+	//{
+	//	Bottom,
+	//	Middle,
+	//	Top,
+	//	Left,
+	//	Right,
+	//	Unknown
+	//};
 
 	class BoxPolicy :
 		private eg::sys::NoCopyMove
 	{
 	public:
-		BoxPolicy(
-			const cv::Rect& bottom,
-			const cv::Rect& middle,
-			const cv::Rect& top,
-			const cv::Rect& left,
-			const cv::Rect& right) :
-			rects_({ bottom, middle, top, left, right })
+
+		BoxPolicy() :
+			rects_({ { BoxPolicyArea::Bottom, cv::Rect{} }, { BoxPolicyArea::Middle, cv::Rect{} }, { BoxPolicyArea::Top, cv::Rect{} }, { BoxPolicyArea::Left, cv::Rect{} }, { BoxPolicyArea::Right, cv::Rect{} } })
 		{
 		}
 
 		BoxPolicyArea area_of(const cv::Point& center) const
 		{
-			if (rects_[BoxPolicyArea::Bottom].contains(center)) return BoxPolicyArea::Bottom;
-			else if (rects_[BoxPolicyArea::Middle].contains(center)) 	return BoxPolicyArea::Middle;
-			else if (rects_[BoxPolicyArea::Top].contains(center)) return BoxPolicyArea::Top;
-			else if (rects_[BoxPolicyArea::Left].contains(center)) return BoxPolicyArea::Left;
-			else if (rects_[BoxPolicyArea::Right].contains(center)) return BoxPolicyArea::Right;
+			if (rects_.at(BoxPolicyArea::Bottom).contains(center)) return BoxPolicyArea::Bottom;
+			else if (rects_.at(BoxPolicyArea::Middle).contains(center)) return BoxPolicyArea::Middle;
+			else if (rects_.at(BoxPolicyArea::Top).contains(center)) return BoxPolicyArea::Top;
+			else if (rects_.at(BoxPolicyArea::Left).contains(center)) return BoxPolicyArea::Left;
+			else if (rects_.at(BoxPolicyArea::Right).contains(center)) return BoxPolicyArea::Right;
 			return BoxPolicyArea::Unknown;
 		}
 
-		const std::vector<cv::Rect>& rects() const
+		void set_area(BoxPolicyArea area, const cv::Rect& rect)
+		{
+			assert(area >= BoxPolicyArea::Bottom and area <= BoxPolicyArea::Right);
+			rects_[area] = rect;
+		}
+
+		const std::unordered_map<BoxPolicyArea, cv::Rect>& rects() const
 		{
 			return rects_;
 		}
 
 	private:
-		std::vector<cv::Rect> rects_;
+		std::unordered_map<BoxPolicyArea, cv::Rect> rects_;
 	};
 
 	class Box
 	{
 	public:
 
-		explicit Box(const BoxPolicy& policy, const cv::Rect& rect) :
+		explicit Box(const BoxPolicy& policy, const cv::Rect& rect, size_t loop_frame) :
 			policy_(policy),
 			id_(gid_++),
 			created_rect_(rect),
 			updated_rect_(rect),
 			created_at_(std::time(nullptr)),
 			updated_at_(created_at_),
-			frame_count_(1),
+			loop_frame_(loop_frame),
 			status_(BoxStatus::Tracking),
 			center_points_(),
 			area_history_()
@@ -102,11 +144,11 @@ namespace eg::bc
 			return updated_at_ - created_at_;
 		}
 
-		BoxStatus update(const cv::Rect& rect)
+		BoxStatus update(const cv::Rect& rect, size_t current_loop_frame)
 		{
 			updated_rect_ = rect;
 			updated_at_ = std::time(nullptr);
-			++frame_count_;
+			loop_frame_ = current_loop_frame;
 
 			cv::Point center
 			(
@@ -115,7 +157,7 @@ namespace eg::bc
 			);
 
 			center_points_.push_back(center);
-			return update_status_(center);
+			return update_status_(center, current_loop_frame);
 		}
 
 		const std::vector<cv::Point>& center_points() const
@@ -133,26 +175,52 @@ namespace eg::bc
 			return updated_rect_;
 		}
 
-		[[nodiscard]] size_t frame_count() const
+		[[nodiscard]] size_t last_loop_frame() const
 		{
-			return frame_count_;
+			return loop_frame_;
 		}
 
-		[[nodiscard]] BoxStatus update_status_(const cv::Point& center)
+		[[nodiscard]] BoxStatus status() const
+		{
+			return status_;
+		}
+
+		[[nodiscard]] std::string status_name() const
+		{
+			switch (status_)
+
+			{
+			case BoxStatus::Counted:
+				return "Counted";
+
+			case BoxStatus::Rejected:
+				return "Rejected";
+
+			case BoxStatus::Returned:
+				return "Returned";
+
+			case BoxStatus::Tracking:
+				return "Tracking";
+
+			default:
+				return "Unknown";
+			}
+		}
+
+		[[nodiscard]] BoxStatus update_status_(const cv::Point& center, size_t current_loop_frame)
 		{
 			// If it's discarded, it is assumed that the dev already got the previous status and
 			// did some actionable items about it
+			//if (status_ == BoxStatus::Discarded)
+			//{
+			//	return status_;
+			//}
 
-			if (status_ == BoxStatus::Discarded)
-			{
-				return status_;
-			}
-
-			if (status_ == BoxStatus::Counted or status_ == BoxStatus::Rejected or status_ == BoxStatus::Returned)
-			{
-				status_ = BoxStatus::Discarded;
-				return status_;
-			}
+			//if (status_ == BoxStatus::Counted or status_ == BoxStatus::Rejected or status_ == BoxStatus::Returned)
+			//{
+			//	//status_ = BoxStatus::Discarded;
+			//	return status_;
+			//}
 
 			// Prep with BoxStatus::Unknown status if
 			// it's the first time
@@ -162,19 +230,19 @@ namespace eg::bc
 				area_history_.push_back(BoxPolicyArea::Unknown);
 			}
 
-			auto area = policy_.area_of(center);
+			auto new_area = policy_.area_of(center);
 			auto last_area = area_history_.back();
 
 			if (last_area == BoxPolicyArea::Unknown and
-				area not_eq BoxPolicyArea::Unknown)
+				new_area not_eq BoxPolicyArea::Unknown)
 			{
 				area_history_.pop_back();
-				area_history_.push_back(area);
+				area_history_.push_back(new_area);
 			}
 
-			else if (area not_eq last_area)
+			else if (new_area not_eq last_area)
 			{
-				area_history_.push_back(area);
+				area_history_.push_back(new_area);
 			}
 
 			// Determine status based on area history
@@ -188,6 +256,14 @@ namespace eg::bc
 					return status_;
 				}
 
+				// Counted: Bottom to Middle;
+				if (area_history_[0] == BoxPolicyArea::Middle and
+					area_history_[1] == BoxPolicyArea::Top)
+				{
+					status_ = BoxStatus::Counted;
+					return status_;
+				}
+
 				// Rejected:
 				// Bottom to Left or
 				// Bottom to Right
@@ -195,7 +271,7 @@ namespace eg::bc
 				if (area_history_[0] == BoxPolicyArea::Bottom and (
 					area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
 				{
-					status_ = BoxStatus::Counted;
+					status_ = BoxStatus::Rejected;
 					return status_;
 				}
 
@@ -206,7 +282,14 @@ namespace eg::bc
 				if (area_history_[0] == BoxPolicyArea::Top and (
 					area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
 				{
-					status_ = BoxStatus::Counted;
+					status_ = BoxStatus::Returned;
+					return status_;
+				}
+
+				if (area_history_[0] == BoxPolicyArea::Top and
+					area_history_[1] == BoxPolicyArea::Middle)
+				{
+					status_ = BoxStatus::Returned;
 					return status_;
 				}
 			}
@@ -223,13 +306,41 @@ namespace eg::bc
 					area_history_[2] == BoxPolicyArea::Top and
 					(area_history_[0] == BoxPolicyArea::Left or area_history_[0] == BoxPolicyArea::Right))
 				{
+					status_ = BoxStatus::Counted;
+					return status_;
+				}
+
+				// Rejected:
+				// Bottom to Middle to Left or
+				// Bottom to Middle to Right
+
+				if (area_history_[0] == BoxPolicyArea::Bottom and
+					area_history_[1] == BoxPolicyArea::Middle and
+					(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
+				{
 					status_ = BoxStatus::Rejected;
 					return status_;
 				}
 
-				if (area_history_[1] == BoxPolicyArea::Bottom and
-					area_history_[2] == BoxPolicyArea::Middle and
-					(area_history_[0] == BoxPolicyArea::Left or area_history_[0] == BoxPolicyArea::Right))
+				// Return:
+				// Top to Middle to Left or
+				// Top to Middle to Right
+
+				if (area_history_[0] == BoxPolicyArea::Top and
+					area_history_[1] == BoxPolicyArea::Middle and
+					(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
+				{
+					status_ = BoxStatus::Returned;
+					return status_;
+				}
+			}
+
+			if (area_history_.size() == 4)
+			{
+				if (area_history_[0] == BoxPolicyArea::Bottom and
+					area_history_[1] == BoxPolicyArea::Middle and
+					area_history_[2] == BoxPolicyArea::Top and
+					(area_history_[3] == BoxPolicyArea::Left or area_history_[3] == BoxPolicyArea::Right))
 				{
 					status_ = BoxStatus::Rejected;
 					return status_;
@@ -260,13 +371,24 @@ namespace eg::bc
 				}
 			}
 
-			if (frame_count_ >= k_max_frame_count)
+			if (should_expire(current_loop_frame))
 			{
 				status_ = BoxStatus::Unknown;
 				return status_;
 			}
 
 			return status_;
+		}
+
+		cv::Point last_center_point() const
+		{
+			return center_points_.back();
+		}
+
+		bool should_expire(size_t current_loop_frame) const
+		{
+			return (current_loop_frame - loop_frame_) >= k_no_frame_update_expire;
+			//return frame_count_ >= k_max_frame_count or status_ == BoxStatus::Discarded;
 		}
 
 	private:
@@ -280,7 +402,7 @@ namespace eg::bc
 
 		time_t created_at_;
 		time_t	 updated_at_;
-		size_t frame_count_;
+		size_t loop_frame_;
 
 		BoxStatus status_;
 
