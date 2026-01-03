@@ -345,30 +345,6 @@ namespace eg::bc
 					status_ = BoxStatus::Rejected;
 					return status_;
 				}
-
-				//// Rejected:
-				//// Bottom to Middle to Left or
-				//// Bottom to Middle to Right
-
-				//if (area_history_[0] == BoxPolicyArea::Bottom and
-				//	area_history_[1] == BoxPolicyArea::Middle and
-				//	(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
-				//{
-				//	status_ = BoxStatus::Rejected;
-				//	return status_;
-				//}
-
-				//// Return:
-				//// Top to Middle to Left or
-				//// Top to Middle to Right
-
-				//if (area_history_[0] == BoxPolicyArea::Top and
-				//	area_history_[1] == BoxPolicyArea::Middle and
-				//	(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
-				//{
-				//	status_ = BoxStatus::Returned;
-				//	return status_;
-				//}
 			}
 
 			if (should_expire(current_loop_frame))

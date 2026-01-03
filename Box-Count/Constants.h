@@ -11,21 +11,21 @@ namespace eg::bc
 	constexpr int k_frame_max_error = 10;
 	const cv::Scalar k_policy_area_color = cv::Scalar(0, 0, 0);
 
-	const cv::Scalar k_box_tracking_color = cv::Scalar(255, 0, 255);
-	const cv::Scalar k_box_tracking_path_color = cv::Scalar(255, 0, 255);
-	const cv::Scalar k_text_tracking_color = cv::Scalar(255, 0, 255);
+	const cv::Scalar k_box_tracking_color = cv::Scalar(0, 192, 255);
+	const cv::Scalar k_box_tracking_path_color = cv::Scalar(0, 192, 255);
+	const cv::Scalar k_text_tracking_color = cv::Scalar(0, 192, 255);
 
 	const cv::Scalar k_box_counted_color = cv::Scalar(0, 255, 0);
 	const cv::Scalar k_box_counted_path_color = cv::Scalar(0, 255, 0);
 	const cv::Scalar k_text_counted_color = cv::Scalar(0, 255, 0);
 
-	const cv::Scalar k_box_returned_color = cv::Scalar(255, 0, 0);
-	const cv::Scalar k_box_returned_path_color = cv::Scalar(255, 0, 0);
-	const cv::Scalar k_text_returned_color = cv::Scalar(255, 0, 0);
+	const cv::Scalar k_box_returned_color = cv::Scalar(0, 0, 255);
+	const cv::Scalar k_box_returned_path_color = cv::Scalar(0, 0, 255);
+	const cv::Scalar k_text_returned_color = cv::Scalar(0, 0, 255);
 
-	const cv::Scalar k_box_rejected_color = cv::Scalar(255, 0, 0);
-	const cv::Scalar k_box_rejected_path_color = cv::Scalar(255, 0, 0);
-	const cv::Scalar k_text_rejected_color = cv::Scalar(255, 0, 0);
+	const cv::Scalar k_box_rejected_color = cv::Scalar(0, 0, 255);
+	const cv::Scalar k_box_rejected_path_color = cv::Scalar(0, 0, 255);
+	const cv::Scalar k_text_rejected_color = cv::Scalar(0, 0, 255);
 
 	const cv::Scalar k_text_color = cv::Scalar(0, 255, 0);
 

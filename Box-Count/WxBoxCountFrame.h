@@ -49,6 +49,7 @@ namespace eg::bc
 		const std::unordered_map<std::string, Cam> cams_;
 
 		size_t trans_gid_;
+		size_t live_preview_ctr_;
 
 		// Trans
 		BoxPolicy  box_policy_;

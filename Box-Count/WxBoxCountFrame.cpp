@@ -12,10 +12,28 @@
 
 namespace eg::bc
 {
+	// TODO: debug mode must be auto for footages/file
+	// - save unidentified status tracks;
+	// - save thresholded image to debug folder or whatever folder
+	// - object ID must start with 1 every new transaction;
+	// - audit image must be the original size of the video;
+	// - validate fields before starting the counting
+	// - [] open debug windows change to save using original size
+	// - clicking the the preview image brings you to folder of the saved images;
+	// - show trans id in the title bar;
+	// - create a rowmanager
+	// - add TTS services
+	// - add calibrate camera
+	// - add field for warehouse / customer name
+	// - fix preview flickering
+	// - set live_preview_ctr_ = 0 every new trans
+	// - debug mode must disable live_preview_ctr_
+
 	WxBoxCountFrame::WxBoxCountFrame(wxWindow* parent) :
 		BoxCountFrame(parent),
 		cams_(Cam::load_cams()),
 		trans_gid_(BoxCountTrans::load_gid()),
+		live_preview_ctr_(0),
 
 		// TODO: 128 must be configurable
 		frame_queue_(128),
@@ -24,13 +42,13 @@ namespace eg::bc
 	{
 		// TODO: Graceful exit if failed to load gid
 
-		on_init_();
-		on_new_wx_states_();
-
 		// TODO: trans must be init at constructor
 		trans_.clear(trans_gid_);
 		trans_gid_ += 1;
 		BoxCountTrans::save_gid(trans_gid_);
+
+		on_init_();
+		on_new_wx_states_();
 	}
 
 	void WxBoxCountFrame::on_init_text_doc_type_()
@@ -86,13 +104,13 @@ namespace eg::bc
 		}
 
 		bitmap_last_box_count->SetBitmap(black_bitmap);
-		bitmap_last_box_count->Refresh();
+		//bitmap_last_box_count->Refresh();
 
 		bitmap_last_reject_count->SetBitmap(black_bitmap);
-		bitmap_last_reject_count->Refresh();
+		//bitmap_last_reject_count->Refresh();
 
 		bitmap_last_return_count->SetBitmap(black_bitmap);
-		bitmap_last_return_count->Refresh();
+		//bitmap_last_return_count->Refresh();
 	}
 
 	void WxBoxCountFrame::on_init_live_()
@@ -109,7 +127,7 @@ namespace eg::bc
 		}
 
 		bitmap_preview->SetBitmap(black_bitmap);
-		bitmap_preview->Refresh();
+		//bitmap_preview->Refresh();
 	}
 
 	void WxBoxCountFrame::on_init_icon_()
@@ -887,33 +905,48 @@ namespace eg::bc
 					auto text = std::format("{}", box.id());
 					cv::putText(frame, text, cv::Point(box.updated_rect().x, box.updated_rect().y - 5),
 						cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
+
+					cv::rectangle(frame, box.updated_rect(), box_color, 1);
+
+					// Draw track history
+					for (const auto& point : box.center_points())
+					{
+						cv::circle(frame, point, 2, box_path_color, -1);
+					}
+
+					// Draw line of center_points
+					for (size_t i = 1; i < box.center_points().size(); ++i)
+					{
+						cv::line(frame, box.center_points()[i - 1], box.center_points()[i], box_path_color, 1);
+					}
 				}
 
+				//
+				if (live_preview_ctr_++ % 5 == 0)
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(frame);
 					bitmap_preview->SetBitmap(bitmap);
-					bitmap_preview->Refresh();
 				}
 
 				if (not last_frame_counted.empty())
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_counted);
 					bitmap_last_box_count->SetBitmap(bitmap);
-					bitmap_last_box_count->Refresh();
+					//bitmap_last_box_count->Refresh();
 				}
 
 				if (not last_frame_rejected.empty())
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_rejected);
 					bitmap_last_reject_count->SetBitmap(bitmap);
-					bitmap_last_reject_count->Refresh();
+					//bitmap_last_reject_count->Refresh();
 				}
 
 				if (not last_frame_returned.empty())
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_returned);
 					bitmap_last_return_count->SetBitmap(bitmap);
-					bitmap_last_return_count->Refresh();
+					//bitmap_last_return_count->Refresh();
 				}
 
 				// update counts

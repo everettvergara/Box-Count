@@ -111,7 +111,7 @@ BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& t
 
 	sizer_count->Add( sizer_box_count, 1, wxEXPAND, 5 );
 
-	m_staticText93 = new wxStaticText( group_count->GetStaticBox(), wxID_ANY, _("Rejects:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText93 = new wxStaticText( group_count->GetStaticBox(), wxID_ANY, _("Rejects from Conveyor:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText93->Wrap( -1 );
 	sizer_count->Add( m_staticText93, 0, wxALL, 5 );
 
@@ -130,7 +130,7 @@ BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& t
 
 	sizer_count->Add( sizer_reject_count, 1, wxEXPAND, 5 );
 
-	m_staticText94 = new wxStaticText( group_count->GetStaticBox(), wxID_ANY, _("Returns:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText94 = new wxStaticText( group_count->GetStaticBox(), wxID_ANY, _("Rejects from Van/Truck:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText94->Wrap( -1 );
 	sizer_count->Add( m_staticText94, 0, wxALL, 5 );
 
