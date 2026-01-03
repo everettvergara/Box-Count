@@ -39,6 +39,7 @@ namespace eg::bc
 
 		const std::vector<wxString> doc_types =
 		{
+			"Picking List",
 			"Delivery Receipt",
 			"Sales Invoice",
 			"Packing List",
