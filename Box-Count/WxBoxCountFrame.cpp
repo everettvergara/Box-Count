@@ -414,6 +414,8 @@ namespace eg::bc
 		bool back_init = false;
 		cv::Mat background;
 
+		auto ctr = 1;
+
 		while (true)
 		{
 			std::unique_lock  lock(motion_mutex_);
@@ -431,6 +433,7 @@ namespace eg::bc
 			lock.unlock();
 
 			// Process frame
+			// TODO: Detect only box colors;
 
 			cv::Mat gray;
 			convert_to_grayscale(frame, gray);
@@ -455,7 +458,52 @@ namespace eg::bc
 
 			auto contours = find_motion_contours(thresh);
 			auto box_contours = contours_to_boxes(contours);
-			auto merged_boxes = merge_boxes(box_contours, 200);
+
+			// TODO: Any box_contours inside left and right policy must be removed before merging
+
+			std::vector<cv::Rect> cleaned_box_contours;
+			const auto& policy_area = box_policy_.rects();
+
+			for (const cv::Rect box : box_contours)
+			{
+				const cv::Rect left_area = policy_area.at(BoxPolicyArea::Left);
+				const cv::Rect right_area = policy_area.at(BoxPolicyArea::Right);
+				const auto box_tl = box.tl();
+				const auto box_br = cv::Point{ box.br().x - 1, box.br().y - 1 };
+
+				if (left_area.contains(box_tl) and left_area.contains(box_br))
+				{
+					continue;
+				}
+
+				if (right_area.contains(box_tl) and right_area.contains(box_br))
+				{
+					continue;
+				}
+
+				cleaned_box_contours.push_back(box);
+			}
+
+			auto merged_boxes = merge_boxes(cleaned_box_contours);
+
+			// TODO: Add to Debug Mode
+
+			//// draw roi to thresh
+			//const auto& rects = this->box_policy_.rects();
+			//for (const auto& [area, rect] : rects)
+			//{
+			//	cv::rectangle(thresh, rect, cv::Scalar(255), 1);
+			//}
+
+			//// draw box_countours to thresh
+			//for (const auto& bc : merged_boxes)
+			//{
+			//	cv::rectangle(thresh, bc, cv::Scalar(255), 1);
+			//}
+
+			//cv::imwrite(std::format("out/debug/box_contours_{}.png", ctr++), thresh);
+			//cv::imshow("Box Countours", thresh);
+			//cv::waitKey(1);
 
 			{
 				std::lock_guard lock(counting_mutex_);
@@ -464,6 +512,8 @@ namespace eg::bc
 
 			counting_cv_.notify_one();
 		}
+
+		//cv::destroyWindow("Box Countours");
 	}
 
 	void WxBoxCountFrame::counting_loop_()
@@ -522,7 +572,39 @@ namespace eg::bc
 				}
 				else
 				{
-					new_rects.push_back(rect);
+					// if there's no acceptable distance... it could be that
+					// this new rect and the person is picking up from left or right side
+
+					// so check if this new rect overlaps in any of the active boxes;
+					// if it overlaps then merge it with the closest to the center;
+
+					auto min_distance = std::numeric_limits<double>::max();
+					auto min_box_itr = active_boxes_.end();
+					auto rect_center_point = cv::Point
+					(
+						rect.x + rect.width / 2,
+						rect.y + rect.height / 2
+					);
+
+					for (auto box_itr = active_boxes_.begin(); box_itr != active_boxes_.end(); ++box_itr)
+					{
+						auto box_center_point = box_itr->last_center_point();
+
+						if ((box_itr->updated_rect() & rect).area() > 0 and // If intersects
+							cv::norm(rect_center_point - box_center_point) < min_distance)  // distance < min_distance
+						{
+							min_box_itr = box_itr;
+						}
+					}
+
+					if (min_box_itr not_eq active_boxes_.end())
+					{
+						min_box_itr->update(rect, loop_frame);
+					}
+					else
+					{
+						new_rects.push_back(rect);
+					}
 				}
 			}
 
@@ -587,63 +669,6 @@ namespace eg::bc
 			cv::Mat last_frame_rejected;
 			cv::Mat last_frame_returned;
 
-			// Prepare preview;
-			for (const auto& box : active_boxes_)
-			{
-				auto box_color = k_box_tracking_color;
-				auto box_path_color = k_box_tracking_path_color;
-				auto text_color = k_text_tracking_color;
-				auto status = box.status();
-				if (status == BoxStatus::Counted)
-				{
-					box_color = k_box_counted_color;
-					box_path_color = k_box_counted_path_color;
-					text_color = k_text_counted_color;
-				}
-				else if (status == BoxStatus::Rejected)
-				{
-					box_color = k_box_rejected_color;
-					box_path_color = k_box_rejected_path_color;
-					text_color = k_text_rejected_color;
-				}
-				else if (status == BoxStatus::Returned)
-				{
-					box_color = k_box_returned_color;
-					box_path_color = k_box_returned_path_color;
-					text_color = k_text_returned_color;
-				}
-
-				cv::rectangle(frame, box.updated_rect(), box_color);
-
-				// Draw track history
-				for (const auto& point : box.center_points())
-				{
-					cv::circle(frame, point, 2, box_path_color, -1);
-				}
-
-				// Draw line of center_points
-				for (size_t i = 1; i < box.center_points().size(); ++i)
-				{
-					cv::line(frame, box.center_points()[i - 1], box.center_points()[i], box_path_color, 1);
-				}
-
-				if (status == BoxStatus::Counted)
-				{
-					last_frame_counted = frame.clone();
-					cv::resize(last_frame_counted, last_frame_counted, cv::Size(160, 100));
-				}
-				else if (status == BoxStatus::Rejected)
-				{
-					last_frame_rejected = frame.clone();
-					cv::resize(last_frame_rejected, last_frame_rejected, cv::Size(160, 100));
-				}
-				else if (status == BoxStatus::Returned)
-				{
-					last_frame_returned = frame.clone();
-					cv::resize(last_frame_returned, last_frame_returned, cv::Size(160, 100));
-				}
-			}
-
 			// Update counts
 			for (const auto& box : active_boxes_)
 			{
@@ -690,57 +715,116 @@ namespace eg::bc
 
 				if (new_count)
 				{
-					const auto [box_color, box_path_color, text_color] =
-						[&status]() -> std::tuple<cv::Scalar, cv::Scalar, cv::Scalar>
-						{
-							if (status == BoxStatus::Counted)
-							{
-								return { k_box_counted_color, k_box_counted_path_color, k_text_counted_color };
-							}
-							else if (status == BoxStatus::Rejected)
-							{
-								return { k_box_rejected_color, k_box_rejected_path_color, k_text_rejected_color };
-							}
-							else // if (status == BoxStatus::Returned)
-							{
-								return { k_box_returned_color, k_box_returned_path_color, k_text_returned_color };
-							}
-						}();
-
-					auto new_frame = frame.clone();
-
-					if (trans_.show_roi)
+					// 1.0 Update last frame preview
 					{
-						const auto& rects = this->box_policy_.rects();
-						for (const auto& [area, rect] : rects)
+						auto box_color = k_box_tracking_color;
+						auto box_path_color = k_box_tracking_path_color;
+						auto text_color = k_text_tracking_color;
+						auto status = box.status();
+						if (status == BoxStatus::Counted)
 						{
-							cv::rectangle(new_frame, rect, k_policy_area_color, 1);
+							box_color = k_box_counted_color;
+							box_path_color = k_box_counted_path_color;
+							text_color = k_text_counted_color;
+						}
+						else if (status == BoxStatus::Rejected)
+						{
+							box_color = k_box_rejected_color;
+							box_path_color = k_box_rejected_path_color;
+
+							text_color = k_text_rejected_color;
+						}
+						else if (status == BoxStatus::Returned)
+						{
+							box_color = k_box_returned_color;
+							box_path_color = k_box_returned_path_color;
+							text_color = k_text_returned_color;
+						}
+
+						cv::rectangle(frame, box.updated_rect(), box_color);
+
+						// Draw track history
+						for (const auto& point : box.center_points())
+						{
+							cv::circle(frame, point, 2, box_path_color, -1);
+						}
+
+						// Draw line of center_points
+						for (size_t i = 1; i < box.center_points().size(); ++i)
+						{
+							cv::line(frame, box.center_points()[i - 1], box.center_points()[i], box_path_color, 1);
+						}
+
+						if (status == BoxStatus::Counted)
+						{
+							last_frame_counted = frame.clone();
+							cv::resize(last_frame_counted, last_frame_counted, cv::Size(160, 100));
+						}
+						else if (status == BoxStatus::Rejected)
+						{
+							last_frame_rejected = frame.clone();
+							cv::resize(last_frame_rejected, last_frame_rejected, cv::Size(160, 100));
+						}
+						else if (status == BoxStatus::Returned)
+						{
+							last_frame_returned = frame.clone();
+							cv::resize(last_frame_returned, last_frame_returned, cv::Size(160, 100));
 						}
 					}
-
-					cv::rectangle(new_frame, box.updated_rect(), box_color, 1);
-
-					for (const auto& point : box.center_points())
+					// 2.0 Save to file for audit purposes:
 					{
-						cv::circle(new_frame, point, 2, box_path_color, -1);
-					}
+						const auto [box_color, box_path_color, text_color] =
+							[&status]() -> std::tuple<cv::Scalar, cv::Scalar, cv::Scalar>
+							{
+								if (status == BoxStatus::Counted)
+								{
+									return { k_box_counted_color, k_box_counted_path_color, k_text_counted_color };
+								}
+								else if (status == BoxStatus::Rejected)
+								{
+									return { k_box_rejected_color, k_box_rejected_path_color, k_text_rejected_color };
+								}
+								else // if (status == BoxStatus::Returned)
+								{
+									return { k_box_returned_color, k_box_returned_path_color, k_text_returned_color };
+								}
+							}();
 
-					for (size_t i = 1; i < box.center_points().size(); ++i)
-					{
-						cv::line(new_frame, box.center_points()[i - 1], box.center_points()[i], box_path_color, 1);
-					}
+						auto new_frame = frame.clone();
 
-					auto text = std::format("{}", box.id());
-					cv::putText(new_frame, text, cv::Point(box.updated_rect().x, box.updated_rect().y - 5),
-						cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
+						if (trans_.show_roi)
+						{
+							const auto& rects = this->box_policy_.rects();
+							for (const auto& [area, rect] : rects)
+							{
+								cv::rectangle(new_frame, rect, k_policy_area_color, 1);
+							}
+						}
 
-					// Save new_frame to png
-					std::filesystem::path out = std::format("out/trans/{}/box_{:05}_{}.png", trans_.id, box.id(), box.status_name());
-					if (not std::filesystem::exists(out.parent_path()))
-					{
-						std::filesystem::create_directories(out.parent_path());
+						cv::rectangle(new_frame, box.updated_rect(), box_color, 1);
+
+						for (const auto& point : box.center_points())
+						{
+							cv::circle(new_frame, point, 2, box_path_color, -1);
+						}
+
+						for (size_t i = 1; i < box.center_points().size(); ++i)
+						{
+							cv::line(new_frame, box.center_points()[i - 1], box.center_points()[i], box_path_color, 1);
+						}
+
+						auto text = std::format("{}", box.id());
+						cv::putText(new_frame, text, cv::Point(box.updated_rect().x, box.updated_rect().y - 5),
+							cv::FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1);
+
+						// Save new_frame to png
+						std::filesystem::path out = std::format("out/trans/{}/box_{:05}_{}.png", trans_.id, box.id(), box.status_name());
+						if (not std::filesystem::exists(out.parent_path()))
+						{
+							std::filesystem::create_directories(out.parent_path());
+						}
+						cv::imwrite(out.string(), new_frame);
 					}
-					cv::imwrite(out.string(), new_frame);
 				}
 			}
 

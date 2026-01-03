@@ -73,7 +73,11 @@ namespace eg::bc
 	// 9. Morph cleanup
 	void clean_motion_mask(cv::Mat& thresh)
 	{
-		cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 2);
+		//cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 2);
+		//cv::erode(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 1);
+
+		// TODO: iterations must be configurable
+		cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 5);
 		cv::erode(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 1);
 	}
 
@@ -156,8 +160,7 @@ namespace eg::bc
 
 	std::vector<cv::Rect> merge_boxes
 	(
-		const std::vector<cv::Rect>& input_boxes,
-		int merge_distance
+		const std::vector<cv::Rect>& input_boxes
 	)
 	{
 		std::vector<cv::Rect> boxes = input_boxes;
@@ -174,7 +177,7 @@ namespace eg::bc
 					if
 						(
 							(boxes[i] & boxes[j]).area() > 0 ||
-							boxes_are_close(boxes[i], boxes[j], merge_distance)
+							boxes_are_close(boxes[i], boxes[j], k_merge_distance)
 							)
 					{
 						boxes[i] = boxes[i] | boxes[j]; // UNION

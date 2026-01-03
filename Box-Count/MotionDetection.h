@@ -4,11 +4,20 @@
 
 namespace eg::bc
 {
+	//constexpr int k_blur_size = 21;
+	//constexpr int k_motion_threshold = 25;
+	//constexpr int k_shadow_delta = 30;         // suppress low-intensity changes
+	//constexpr int k_min_contour_area = 100;
+	//constexpr double k_bg_alpha = 0.02;        // slow, stable background
+
+	// optimized for 320_x_200
+
 	constexpr int k_blur_size = 21;
 	constexpr int k_motion_threshold = 25;
 	constexpr int k_shadow_delta = 30;         // suppress low-intensity changes
-	constexpr int k_min_contour_area = 100;
+	constexpr int k_min_contour_area = 50;
 	constexpr double k_bg_alpha = 0.02;        // slow, stable background
+	constexpr int k_merge_distance = 20;
 
 	void convert_to_grayscale(const cv::Mat& input, cv::Mat& gray);
 	void blur_frame(cv::Mat& gray);
@@ -22,6 +31,6 @@ namespace eg::bc
 	void draw_motion(cv::Mat& frame, const std::vector<std::vector<cv::Point>>& contours);
 	std::vector<cv::Rect> contours_to_boxes(const std::vector<std::vector<cv::Point>>& contours);
 	bool boxes_are_close(const cv::Rect& a, const cv::Rect& b, int padding);
-	std::vector<cv::Rect> merge_boxes(const std::vector<cv::Rect>& input_boxes, int merge_distance);
+	std::vector<cv::Rect> merge_boxes(const std::vector<cv::Rect>& input_boxes);
 	void draw_boxes(cv::Mat& frame, const std::vector<cv::Rect>& boxes);
 }

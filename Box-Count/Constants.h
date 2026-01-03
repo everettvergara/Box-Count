@@ -9,7 +9,7 @@ namespace eg::bc
 	constexpr int k_frame_fps = 30;
 	constexpr int k_frame_capture_after = 0; // 0 = noskip
 	constexpr int k_frame_max_error = 10;
-	const cv::Scalar k_policy_area_color = cv::Scalar(100, 100, 100);
+	const cv::Scalar k_policy_area_color = cv::Scalar(0, 0, 0);
 
 	const cv::Scalar k_box_tracking_color = cv::Scalar(255, 0, 255);
 	const cv::Scalar k_box_tracking_path_color = cv::Scalar(255, 0, 255);
