@@ -76,6 +76,12 @@ namespace eg::bc
 		std::condition_variable counting_cv_;
 		std::mutex counting_mutex_;
 
+		std::thread tts_thread_;
+		std::condition_variable tts_cv_;
+		std::mutex tts_mutex_;
+		std::queue<std::string> queued_tts_;
+		std::queue<std::vector<int16_t>> queued_pcm_;
+
 		void on_init_();
 		void on_init_icon_();
 		void on_init_text_doc_type_();
@@ -103,6 +109,7 @@ namespace eg::bc
 		void cam_loop_();
 		void motion_loop_();
 		void counting_loop_();
+		void tts_loop_();
 
 		// Helpers:
 		wxBitmap cv_mat_to_wx_bitmap_(const cv::Mat& input);

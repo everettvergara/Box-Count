@@ -1,9 +1,9 @@
 #pragma once
 
 #include "NoCopyMove.h"
+#include "WxBoxCountFrame.h"
 #include <wx/app.h>
 #include <wx/image.h>
-#include "WxBoxCountFrame.h"
 
 namespace eg::bc
 {
@@ -16,7 +16,6 @@ namespace eg::bc
 		{
 			wxInitAllImageHandlers();
 
-			// Open WxBoxCountFrame
 			WxBoxCountFrame* frame = new WxBoxCountFrame(nullptr);
 			frame->Show(true);
 

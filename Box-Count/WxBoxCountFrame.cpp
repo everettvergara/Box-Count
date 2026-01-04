@@ -1,15 +1,22 @@
 #include "WxBoxCountFrame.h"
 #include "Constants.h"
 #include "MotionDetection.h"
+#include "ESpeakHelper.h"
 
 #include <wx/msgdlg.h>
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
+#include <espeak-ng/speak_lib.h>
+
+#include <objbase.h>
 
 #include <opencv2/opencv.hpp>
 #include <format>
 #include <unordered_set>
 
+/*
+
+*/
 namespace eg::bc
 {
 	// TODO: debug mode must be auto for footages/file
@@ -28,6 +35,10 @@ namespace eg::bc
 	// - fix preview flickering
 	// - set live_preview_ctr_ = 0 every new trans
 	// - debug mode must disable live_preview_ctr_
+	// - failed to read from camera should ask if the user wants to retry
+	// - add logging service
+	// - add config struct
+	// - small preview must include the ID of the box
 
 	WxBoxCountFrame::WxBoxCountFrame(wxWindow* parent) :
 		BoxCountFrame(parent),
@@ -226,27 +237,34 @@ namespace eg::bc
 		cam_thread_ = std::thread(&WxBoxCountFrame::cam_loop_, this);
 		motion_thread_ = std::thread(&WxBoxCountFrame::motion_loop_, this);
 		counting_thread_ = std::thread(&WxBoxCountFrame::counting_loop_, this);
+		tts_thread_ = std::thread(&WxBoxCountFrame::tts_loop_, this);
 	}
 
 	void WxBoxCountFrame::stop_threads_()
 	{
 		signal_stop_ = true;
+		motion_cv_.notify_one();
+		counting_cv_.notify_one();
 
 		if (cam_thread_.joinable())
 		{
 			cam_thread_.join();
 		}
 
-		motion_cv_.notify_one();
 		if (motion_thread_.joinable())
 		{
 			motion_thread_.join();
 		}
 
-		counting_cv_.notify_one();
 		if (counting_thread_.joinable())
 		{
 			counting_thread_.join();
+		}
+
+		tts_cv_.notify_one();
+		if (tts_thread_.joinable())
+		{
+			tts_thread_.join();
 		}
 	}
 
@@ -922,7 +940,7 @@ namespace eg::bc
 				}
 
 				//
-				if (live_preview_ctr_++ % 5 == 0)
+				if (live_preview_ctr_++ % 2 == 0)
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(frame);
 					bitmap_preview->SetBitmap(bitmap);
@@ -932,21 +950,38 @@ namespace eg::bc
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_counted);
 					bitmap_last_box_count->SetBitmap(bitmap);
-					//bitmap_last_box_count->Refresh();
+
+					// TODO: Make 1 parameterized in config
+					if (counted_boxes_ % 1 == 0)
+					{
+						{
+							std::lock_guard lock(tts_mutex_);
+							queued_tts_.push(std::string("Box count is now ") + std::to_string(counted_boxes_));
+						}
+						tts_cv_.notify_one();
+					}
 				}
 
 				if (not last_frame_rejected.empty())
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_rejected);
 					bitmap_last_reject_count->SetBitmap(bitmap);
-					//bitmap_last_reject_count->Refresh();
+					{
+						std::lock_guard lock(tts_mutex_);
+						queued_tts_.push(std::string("Reject from conveyor is now ") + std::to_string(rejected_boxes_));
+					}
+					tts_cv_.notify_one();
 				}
 
 				if (not last_frame_returned.empty())
 				{
 					auto bitmap = cv_mat_to_wx_bitmap_(last_frame_returned);
 					bitmap_last_return_count->SetBitmap(bitmap);
-					//bitmap_last_return_count->Refresh();
+					{
+						std::lock_guard lock(tts_mutex_);
+						queued_tts_.push(std::string("Reject from Truck is now ") + std::to_string(returned_boxes_));
+					}
+					tts_cv_.notify_one();
 				}
 
 				// update counts
@@ -957,5 +992,96 @@ namespace eg::bc
 
 			loop_frame++;
 		}
+	}
+
+	void WxBoxCountFrame::tts_loop_()
+	{
+		if (HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED); FAILED(hr))
+		{
+			// TODO: Log Error
+			return;
+		}
+
+		auto& espeak = EspeakNg::instance();
+		if (not espeak.init())
+		{
+			// TODO: Log Error
+			return;
+		}
+
+		ma_engine_config engine_config = ma_engine_config_init();
+		engine_config.sampleRate = espeak.sample_rate;
+
+		ma_engine ma_engine;
+
+		if (ma_engine_init(&engine_config, &ma_engine) not_eq MA_SUCCESS)
+		{
+			// TODO: Log Error
+			CoUninitialize();
+			return;
+		}
+
+		// Test out
+		//queued_tts_.emplace("Starting the Count for nutriasia marilao please wait...");
+
+		while (true)
+		{
+			std::unique_lock lock(tts_mutex_);
+			tts_cv_.wait(lock, [&, this]
+				{
+					return signal_stop_ or not queued_tts_.empty();
+				});
+
+			if (signal_stop_)
+			{
+				break;
+			}
+
+			auto front = std::move(queued_tts_.front());
+			queued_tts_.pop();
+			lock.unlock();
+
+			const auto pcm_to_play = espeak.generate_pcm_from_text(front.c_str());
+
+			ma_audio_buffer_config buffer_config =
+				ma_audio_buffer_config_init(
+					ma_format_s16,
+					k_ma_channels,
+					pcm_to_play.size() / k_ma_channels,
+					pcm_to_play.data(),
+					nullptr
+				);
+
+			ma_audio_buffer buffer{};
+			if (ma_audio_buffer_init(&buffer_config, &buffer) not_eq MA_SUCCESS)
+			{
+				// TODO: Log ERROR here
+				break;
+			}
+
+			ma_sound sound{};
+			if (ma_sound_init_from_data_source(
+				&ma_engine,
+				&buffer,
+				0,
+				nullptr,
+				&sound) != MA_SUCCESS)
+			{
+				// TODO: Log Error here
+				ma_audio_buffer_uninit(&buffer);
+				ma_engine_uninit(&ma_engine);
+				break;
+			}
+
+			ma_sound_start(&sound);
+
+			while (ma_sound_is_playing(&sound)) std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+			ma_sound_uninit(&sound);
+			ma_audio_buffer_uninit(&buffer);
+		}
+
+		ma_engine_uninit(&ma_engine);
+		CoUninitialize();
 	}
 }

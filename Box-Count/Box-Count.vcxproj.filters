@@ -45,6 +45,12 @@
     <ClCompile Include="MotionDetection.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="miniaudio_implem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ESpeakHelper.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Notes\HSV-Colors.txt">
@@ -77,6 +83,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="MotionDetection.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ESpeakHelper.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

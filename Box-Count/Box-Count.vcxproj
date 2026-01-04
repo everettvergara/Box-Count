@@ -101,17 +101,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ESPEAK_NG_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(CPP_LIBS)/json/include;$(CPP_LIBS)/opencv/opencv-4.10-$(Configuration)/include;$(CPP_LIBS)/wxWidgets/include;$(CPP_LIBS)/wxWidgets/lib/debug/vc_x64_lib/mswud</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CPP_LIBS)/json/include;$(CPP_LIBS)/opencv/opencv-4.10-$(Configuration)/include;$(CPP_LIBS)/wxWidgets/include;$(CPP_LIBS)/wxWidgets/lib/debug/vc_x64_lib/mswud;$(CPP_LIBS)/espeak-ng/include;$(CPP_LIBS)/miniaudio/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(CPP_LIBS)/opencv/opencv-4.10-debug/x64/vc17/lib;$(CPP_LIBS)/wxWidgets/lib/$(Configuration)/vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4100$(OpenCVSuffix).lib;opencv_img_hash4100$(OpenCVSuffix).lib;wxexpat$(WXSuffix).lib;wxjpeg$(WXSuffix).lib;wxlexilla$(WXSuffix).lib;wxmsw33u$(WXSuffix).lib;wxpng$(WXSuffix).lib;wxregexu$(WXSuffix).lib;wxscintilla$(WXSuffix).lib;wxsharpyuv.lib;wxtiff$(WXSuffix).lib;wxwebp.lib;wxwebpdemux.lib;wxzlib$(WXSuffix).lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CPP_LIBS)/opencv/opencv-4.10-debug/x64/vc17/lib;$(CPP_LIBS)/wxWidgets/lib/$(Configuration)/vc_x64_lib;$(CPP_LIBS)/espeak-ng/lib/$(Configuration);$(CPP_LIBS)/miniaudio/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world4100$(OpenCVSuffix).lib;opencv_img_hash4100$(OpenCVSuffix).lib;wxexpat$(WXSuffix).lib;wxjpeg$(WXSuffix).lib;wxlexilla$(WXSuffix).lib;wxmsw33u$(WXSuffix).lib;wxpng$(WXSuffix).lib;wxregexu$(WXSuffix).lib;wxscintilla$(WXSuffix).lib;wxsharpyuv.lib;wxtiff$(WXSuffix).lib;wxwebp.lib;wxwebpdemux.lib;wxzlib$(WXSuffix).lib;comctl32.lib;rpcrt4.lib;espeak-ng.lib;speechPlayer.lib;ucd.lib;miniaudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,21 +120,23 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ESPEAK_NG_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(CPP_LIBS)/json/include;$(CPP_LIBS)/opencv/opencv-4.10-$(Configuration)/include;$(CPP_LIBS)/wxWidgets/include;$(CPP_LIBS)/wxWidgets/lib/debug/vc_x64_lib/mswud</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CPP_LIBS)/json/include;$(CPP_LIBS)/opencv/opencv-4.10-$(Configuration)/include;$(CPP_LIBS)/wxWidgets/include;$(CPP_LIBS)/wxWidgets/lib/debug/vc_x64_lib/mswud;$(CPP_LIBS)/espeak-ng/include;$(CPP_LIBS)/miniaudio/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(CPP_LIBS)/opencv/opencv-4.10-debug/x64/vc17/lib;$(CPP_LIBS)/wxWidgets/lib/$(Configuration)/vc_x64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_world4100$(OpenCVSuffix).lib;opencv_img_hash4100$(OpenCVSuffix).lib;wxexpat$(WXSuffix).lib;wxjpeg$(WXSuffix).lib;wxlexilla$(WXSuffix).lib;wxmsw33u$(WXSuffix).lib;wxpng$(WXSuffix).lib;wxregexu$(WXSuffix).lib;wxscintilla$(WXSuffix).lib;wxsharpyuv.lib;wxtiff$(WXSuffix).lib;wxwebp.lib;wxwebpdemux.lib;wxzlib$(WXSuffix).lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CPP_LIBS)/opencv/opencv-4.10-debug/x64/vc17/lib;$(CPP_LIBS)/wxWidgets/lib/$(Configuration)/vc_x64_lib;$(CPP_LIBS)/espeak-ng/lib/$(Configuration);$(CPP_LIBS)/miniaudio/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world4100$(OpenCVSuffix).lib;opencv_img_hash4100$(OpenCVSuffix).lib;wxexpat$(WXSuffix).lib;wxjpeg$(WXSuffix).lib;wxlexilla$(WXSuffix).lib;wxmsw33u$(WXSuffix).lib;wxpng$(WXSuffix).lib;wxregexu$(WXSuffix).lib;wxscintilla$(WXSuffix).lib;wxsharpyuv.lib;wxtiff$(WXSuffix).lib;wxwebp.lib;wxwebpdemux.lib;wxzlib$(WXSuffix).lib;comctl32.lib;rpcrt4.lib;espeak-ng.lib;speechPlayer.lib;ucd.lib;miniaudio.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Bak-Box-Count.cpp" />
+    <ClCompile Include="ESpeakHelper.cpp" />
+    <ClCompile Include="miniaudio_implem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MotionDetection.cpp" />
     <ClCompile Include="WxBoxCount.cpp" />
@@ -148,6 +150,7 @@
     <ClInclude Include="Data.hpp" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CircQueue.hpp" />
+    <ClInclude Include="ESpeakHelper.h" />
     <ClInclude Include="MotionDetection.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="WxApp.hpp" />
