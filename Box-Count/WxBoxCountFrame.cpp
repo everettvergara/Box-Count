@@ -29,7 +29,7 @@ namespace eg::bc
 	// - clicking the the preview image brings you to folder of the saved images;
 	// - show trans id in the title bar;
 	// - create a rowmanager
-	// - add TTS services
+	// * add TTS services
 	// - add calibrate camera
 	// - add field for warehouse / customer name
 	// - fix preview flickering
@@ -956,7 +956,7 @@ namespace eg::bc
 					{
 						{
 							std::lock_guard lock(tts_mutex_);
-							queued_tts_.push(std::string("Box count is now ") + std::to_string(counted_boxes_));
+							queued_tts_.push(std::string("Box count is ") + std::to_string(counted_boxes_));
 						}
 						tts_cv_.notify_one();
 					}
@@ -968,7 +968,7 @@ namespace eg::bc
 					bitmap_last_reject_count->SetBitmap(bitmap);
 					{
 						std::lock_guard lock(tts_mutex_);
-						queued_tts_.push(std::string("Reject from conveyor is now ") + std::to_string(rejected_boxes_));
+						queued_tts_.push(std::string("Reject from conveyor is ") + std::to_string(rejected_boxes_));
 					}
 					tts_cv_.notify_one();
 				}
@@ -979,7 +979,7 @@ namespace eg::bc
 					bitmap_last_return_count->SetBitmap(bitmap);
 					{
 						std::lock_guard lock(tts_mutex_);
-						queued_tts_.push(std::string("Reject from Truck is now ") + std::to_string(returned_boxes_));
+						queued_tts_.push(std::string("Reject from Truck is ") + std::to_string(returned_boxes_));
 					}
 					tts_cv_.notify_one();
 				}
@@ -1020,9 +1020,6 @@ namespace eg::bc
 			CoUninitialize();
 			return;
 		}
-
-		// Test out
-		//queued_tts_.emplace("Starting the Count for nutriasia marilao please wait...");
 
 		while (true)
 		{
@@ -1080,7 +1077,7 @@ namespace eg::bc
 			ma_sound_uninit(&sound);
 			ma_audio_buffer_uninit(&buffer);
 		}
-
+		queued_tts_ = std::queue<std::string>{};
 		ma_engine_uninit(&ma_engine);
 		CoUninitialize();
 	}
