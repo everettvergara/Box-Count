@@ -8,7 +8,9 @@
 #include <wx/dcmemory.h>
 #include <espeak-ng/speak_lib.h>
 
+#ifdef _WIN32
 #include <objbase.h>
+#endif
 
 #include <opencv2/opencv.hpp>
 #include <format>
@@ -39,6 +41,7 @@ namespace eg::bc
 	// - add logging service
 	// - add config struct
 	// - small preview must include the ID of the box
+	// - only once instance of box counter per machine can be opened
 
 	WxBoxCountFrame::WxBoxCountFrame(wxWindow* parent) :
 		BoxCountFrame(parent),
@@ -996,11 +999,13 @@ namespace eg::bc
 
 	void WxBoxCountFrame::tts_loop_()
 	{
+#ifdef _WIN32
 		if (HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED); FAILED(hr))
 		{
 			// TODO: Log Error
 			return;
 		}
+#endif
 
 		auto& espeak = EspeakNg::instance();
 		if (not espeak.init())
@@ -1062,7 +1067,7 @@ namespace eg::bc
 				&buffer,
 				0,
 				nullptr,
-				&sound) != MA_SUCCESS)
+				&sound) not_eq MA_SUCCESS)
 			{
 				// TODO: Log Error here
 				ma_audio_buffer_uninit(&buffer);
@@ -1079,6 +1084,9 @@ namespace eg::bc
 		}
 		queued_tts_ = std::queue<std::string>{};
 		ma_engine_uninit(&ma_engine);
+
+#ifdef _WIN32
 		CoUninitialize();
+#endif
 	}
 }

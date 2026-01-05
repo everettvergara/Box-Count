@@ -76,6 +76,7 @@ namespace eg::bc
 		std::condition_variable counting_cv_;
 		std::mutex counting_mutex_;
 
+		// TTS
 		std::thread tts_thread_;
 		std::condition_variable tts_cv_;
 		std::mutex tts_mutex_;
@@ -111,7 +112,7 @@ namespace eg::bc
 		void counting_loop_();
 		void tts_loop_();
 
-		// Helpers:
+		// TODO: Take out from the class
 		wxBitmap cv_mat_to_wx_bitmap_(const cv::Mat& input);
 	};
 }
