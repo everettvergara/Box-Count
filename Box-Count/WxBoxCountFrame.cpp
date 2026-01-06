@@ -16,9 +16,6 @@
 #include <format>
 #include <unordered_set>
 
-/*
-
-*/
 namespace eg::bc
 {
 	// TODO: debug mode must be auto for footages/file
