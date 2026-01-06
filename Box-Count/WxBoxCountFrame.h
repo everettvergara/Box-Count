@@ -83,9 +83,6 @@ namespace eg::bc
 		std::queue<std::string> queued_tts_;
 		std::queue<std::vector<int16_t>> queued_pcm_;
 
-		// Calibrate Thread
-		std::thread calibrate_thread_;
-
 		void on_init_();
 		void on_init_icon_();
 		void on_init_text_doc_type_();
@@ -97,7 +94,6 @@ namespace eg::bc
 
 		bool on_new_trans_();
 
-		void on_button_preview_cam_(wxCommandEvent& event) override;
 		void on_button_new_(wxCommandEvent& event) override;
 		void on_button_close_(wxCommandEvent& event) override;
 		void on_button_start_(wxCommandEvent& event) override;

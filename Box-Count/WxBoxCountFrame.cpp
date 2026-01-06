@@ -206,44 +206,6 @@ namespace eg::bc
 		on_init_live_();
 	}
 
-	void WxBoxCountFrame::on_button_preview_cam_(wxCommandEvent&)
-	{
-		if (calibrate_thread_.joinable())
-		{
-			// TODO: Notify user that thred is already running;
-			return;
-		}
-
-		calibrate_thread_ = std::thread([this]
-			{
-				cv::VideoCapture cap("assets/sample-conveyor.mp4");
-
-				const cv::String win_calibrate_name = "Calibrate";
-
-				cv::namedWindow(win_calibrate_name);
-
-				int flip = 0;
-
-				cv::createTrackbar("Flip", win_calibrate_name, &flip, 1, [&](int pos, void*) -> void
-					{
-						cv::setTrackbarPos("Flip", win_calibrate_name, pos);
-					});
-
-				while (true)
-				{
-					cv::Mat frame;
-					cap.read(frame);
-					cv::imshow(win_calibrate_name, frame);
-					if (cv::waitKey(1) == 27)
-					{
-						break;
-					}
-				}
-				cv::destroyWindow(win_calibrate_name);
-				cap.release();
-			});
-	}
-
 	void WxBoxCountFrame::on_button_new_(wxCommandEvent&)
 	{
 		frame_queue_.clear();
@@ -320,7 +282,6 @@ namespace eg::bc
 		trans_.start_time = std::time(nullptr);
 		wxDateTime now(trans_.start_time);
 		text_start_time->SetValue(now.Format("%m/%d/%Y %H:%M:%S"));
-		trans_.show_debug_windows = check_preview_motion->GetValue();
 		trans_.show_track_history = check_show_track_history->GetValue();
 		trans_.show_roi = check_show_roi->GetValue();
 
@@ -335,8 +296,6 @@ namespace eg::bc
 		picker_doc_date->Enable(false);
 		choice_camera->Enable(false);
 
-		button_calibrate_roi->Enable(false);
-		check_preview_motion->Enable(false);
 		check_show_track_history->Enable(false);
 		check_show_roi->Enable(false);
 
@@ -352,8 +311,6 @@ namespace eg::bc
 		picker_doc_date->Enable(false);
 		choice_camera->Enable(false);
 
-		button_calibrate_roi->Enable(false);
-		check_preview_motion->Enable(false);
 		check_show_track_history->Enable(false);
 		check_show_roi->Enable(false);
 
@@ -369,8 +326,6 @@ namespace eg::bc
 		picker_doc_date->Enable(true);
 		choice_camera->Enable(true);
 
-		button_calibrate_roi->Enable(true);
-		check_preview_motion->Enable(true);
 		check_show_track_history->Enable(true);
 		check_show_roi->Enable(true);
 

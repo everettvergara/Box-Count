@@ -128,7 +128,7 @@ int main(int argc, char* args[])
 				break;
 			case 's': [[fallthrough]];
 			case 'S':
-
+			{
 				// Save to json;
 				auto jdata = [&] { std::ifstream file(args[1]); return nlohmann::json::parse(file); }();
 
@@ -151,35 +151,35 @@ int main(int argc, char* args[])
 				// get xframe factor
 
 				auto xframe_factor = static_cast<double>(k_target_width) / static_cast<double>(k_frame_width);
-				auto yframe_factor = static_cast<double>(k_target_height) / static_cast<double>(k_frame_height);
+				auto yframe_factor = static_cast<double>(k_target_height) / static_cast<double>(frame.rows);
 
 				area["left"]["x"] = 0;
 				area["left"]["y"] = 0;
-				area["left"]["width"] = static_cast<int>(global.conveyor_x1() * xframe_factor);
-				area["left"]["height"] = k_target_height;
+				area["left"]["w"] = static_cast<int>(global.conveyor_x1() * xframe_factor);
+				area["left"]["h"] = k_target_height;
 				area["right"]["x"] = static_cast<int>(global.conveyor_x2() * xframe_factor);
 				area["right"]["y"] = 0;
-				area["right"]["width"] = k_target_width - static_cast<int>(global.conveyor_x2() * xframe_factor);
-				area["right"]["height"] = k_target_height;
+				area["right"]["w"] = k_target_width - static_cast<int>(global.conveyor_x2() * xframe_factor);
+				area["right"]["h"] = k_target_height;
 				area["top"]["x"] = static_cast<int>(global.conveyor_x1() * xframe_factor);
 				area["top"]["y"] = 0;
-				area["top"]["width"] = static_cast<int>(global.conveyor_width * xframe_factor * 2);
-				area["top"]["height"] = static_cast<int>(global.conveyor_y1 * yframe_factor);
+				area["top"]["w"] = static_cast<int>(global.conveyor_width * xframe_factor);
+				area["top"]["h"] = static_cast<int>(global.conveyor_y1 * yframe_factor);
 				area["bottom"]["x"] = static_cast<int>(global.conveyor_x1() * xframe_factor);
 				area["bottom"]["y"] = static_cast<int>(global.conveyor_y2 * yframe_factor);
-				area["bottom"]["width"] = static_cast<int>(global.conveyor_width * xframe_factor * 2);
-				area["bottom"]["height"] = k_target_height - static_cast<int>(global.conveyor_y2 * yframe_factor);
+				area["bottom"]["w"] = static_cast<int>(global.conveyor_width * xframe_factor);
+				area["bottom"]["h"] = k_target_height - static_cast<int>(global.conveyor_y2 * yframe_factor);
 				area["middle"]["x"] = static_cast<int>(global.conveyor_x1() * xframe_factor);
 				area["middle"]["y"] = static_cast<int>(global.conveyor_y1 * yframe_factor);
-				area["middle"]["width"] = static_cast<int>(global.conveyor_width * xframe_factor * 2);
-				area["middle"]["height"] = static_cast<int>((global.conveyor_y2 - global.conveyor_y1) * yframe_factor);
+				area["middle"]["w"] = static_cast<int>(global.conveyor_width * xframe_factor);
+				area["middle"]["h"] = static_cast<int>((global.conveyor_y2 - global.conveyor_y1) * yframe_factor);
 
 				jdata[key]["area"] = area;
 				std::ofstream file_out(args[1]);
 				file_out << jdata.dump(4);
 				is_exit = true;
-
-				break;
+			}
+			break;
 			}
 		} while (not is_exit);
 
