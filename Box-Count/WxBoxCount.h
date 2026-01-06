@@ -26,8 +26,8 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/statbmp.h>
-#include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/button.h>
 #include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -65,8 +65,6 @@ class BoxCountFrame : public wxFrame
 		wxStaticBitmap* bitmap_preview;
 		wxStaticText* m_staticText97;
 		wxChoice* choice_camera;
-		wxButton* button_calibrate_roi;
-		wxCheckBox* check_preview_motion;
 		wxCheckBox* check_show_track_history;
 		wxCheckBox* check_show_roi;
 		wxButton* button_new;
@@ -75,7 +73,6 @@ class BoxCountFrame : public wxFrame
 		wxButton* button_close;
 
 		// Virtual event handlers, override them in your derived class
-		virtual void on_button_preview_cam_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_new_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_start_( wxCommandEvent& event ) { event.Skip(); }
 		virtual void on_button_stop_( wxCommandEvent& event ) { event.Skip(); }

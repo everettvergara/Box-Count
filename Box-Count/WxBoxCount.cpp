@@ -179,12 +179,6 @@ BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& t
 	choice_camera->SetSelection( 0 );
 	sizer_live->Add( choice_camera, 0, wxALL, 5 );
 
-	button_calibrate_roi = new wxButton( group_live->GetStaticBox(), wxID_ANY, _("Calibrate Selected Camera"), wxDefaultPosition, wxDefaultSize, 0 );
-	sizer_live->Add( button_calibrate_roi, 0, wxALL, 5 );
-
-	check_preview_motion = new wxCheckBox( group_live->GetStaticBox(), wxID_ANY, _("Open Debug Windows"), wxDefaultPosition, wxDefaultSize, 0 );
-	sizer_live->Add( check_preview_motion, 0, wxALL, 5 );
-
 	check_show_track_history = new wxCheckBox( group_live->GetStaticBox(), wxID_ANY, _("Show Track History"), wxDefaultPosition, wxDefaultSize, 0 );
 	check_show_track_history->SetValue(true);
 	sizer_live->Add( check_show_track_history, 0, wxALL, 5 );
@@ -239,7 +233,6 @@ BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& t
 	this->Centre( wxBOTH );
 
 	// Connect Events
-	button_calibrate_roi->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_preview_cam_ ), NULL, this );
 	button_new->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_new_ ), NULL, this );
 	button_start->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_start_ ), NULL, this );
 	button_stop->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BoxCountFrame::on_button_stop_ ), NULL, this );
