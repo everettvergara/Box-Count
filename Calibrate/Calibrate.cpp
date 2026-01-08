@@ -256,7 +256,7 @@ const char* validate_args(int argc, char* args[])
 
 	if (is_file)
 	{
-		std::filesystem::path filename;
+		std::filesystem::path filename(args[2]);
 		if (not std::filesystem::exists(filename))
 		{
 			return "The <file> specified does not exist. Must be a valid .mp4 file for debug.";

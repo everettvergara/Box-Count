@@ -29,7 +29,7 @@ namespace eg::bc
 	// - show trans id in the title bar;
 	// - create a rowmanager
 	// * add TTS services
-	// - add calibrate camera
+	// * add calibrate camera
 	// - add field for warehouse / customer name
 	// - fix preview flickering
 	// - set live_preview_ctr_ = 0 every new trans

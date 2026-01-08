@@ -4,6 +4,9 @@
 #include <opencv2/opencv.hpp>
 #include <ctime>
 #include <unordered_map>
+#include <format>
+#include <string>
+#include <fstream>
 
 namespace eg::bc
 {
@@ -132,6 +135,7 @@ namespace eg::bc
 			area_history_.reserve(k_max_history);
 
 			center_points_.push_back(center);
+			status_ = update_status_(center, loop_frame);
 		}
 
 		[[nodiscard]] size_t id() const
@@ -142,6 +146,16 @@ namespace eg::bc
 		[[nodiscard]] time_t elapsed_time() const
 		{
 			return updated_at_ - created_at_;
+		}
+
+		void log(const std::string& text)
+		{
+			if (id_ == 5)
+			{
+				std::ofstream log_file("box_log.txt", std::ios::app);
+				log_file << "[Box " << id_ << "] " << text << std::endl;
+				//std::cout << "[Box " << id_ << "] " << text << std::endl;
+			}
 		}
 
 		BoxStatus update(const cv::Rect& rect, size_t current_loop_frame)
@@ -227,8 +241,11 @@ namespace eg::bc
 
 			if (area_history_.empty())
 			{
+				log(std::format("0. area_history_ is empty, adding Unknown"));
 				area_history_.push_back(BoxPolicyArea::Unknown);
 			}
+
+			log(std::format("1. center {}, {}", center.x, center.y));
 
 			auto new_area = policy_.area_of(center);
 			auto last_area = area_history_.back();
@@ -238,14 +255,26 @@ namespace eg::bc
 			{
 				area_history_.pop_back();
 				area_history_.push_back(new_area);
+				log(std::format("2. area_history_ {}", static_cast<int>(new_area)));
 			}
 
-			else if (new_area not_eq last_area)
+			last_area = area_history_.back();
+			log(std::format("3. last_area_ {}", static_cast<int>(last_area)));
+
+			if (new_area not_eq last_area)
 			{
 				area_history_.push_back(new_area);
+				log(std::format("4. last_area_ {} -> new area{}", static_cast<int>(last_area), static_cast<int>(new_area)));
 			}
 
 			// Determine status based on area history
+			log(std::format("5. area_history_size_ {}", area_history_.size()));
+			log("5x area_history_elements_:");
+			for (size_t i = 0; i < area_history_.size(); ++i)
+			{
+				log(std::format("   - [{}] {}", i, static_cast<int>(area_history_[i])));
+			}
+
 			if (area_history_.size() == 2)
 			{
 				// Counted: Bottom to Middle;
@@ -256,13 +285,13 @@ namespace eg::bc
 					return status_;
 				}
 
-				// Counted: Bottom to Middle;
-				if (area_history_[0] == BoxPolicyArea::Middle and
-					area_history_[1] == BoxPolicyArea::Top)
-				{
-					status_ = BoxStatus::Counted;
-					return status_;
-				}
+				//// Counted: Bottom to Middle;
+				//if (area_history_[0] == BoxPolicyArea::Middle and
+				//	area_history_[1] == BoxPolicyArea::Top)
+				//{
+				//	status_ = BoxStatus::Counted;
+				//	return status_;
+				//}
 
 				// Rejected:
 				// Bottom to Left or
@@ -305,6 +334,14 @@ namespace eg::bc
 				if (area_history_[1] == BoxPolicyArea::Middle and
 					area_history_[2] == BoxPolicyArea::Top and
 					(area_history_[0] == BoxPolicyArea::Left or area_history_[0] == BoxPolicyArea::Right))
+				{
+					status_ = BoxStatus::Counted;
+					return status_;
+				}
+
+				if (area_history_[0] == BoxPolicyArea::Bottom and
+					area_history_[1] == BoxPolicyArea::Middle and
+					area_history_[2] == BoxPolicyArea::Top)
 				{
 					status_ = BoxStatus::Counted;
 					return status_;
