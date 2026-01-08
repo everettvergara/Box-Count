@@ -58,6 +58,33 @@ int main(int argc, char* args[])
 			return EXIT_FAILURE;
 		}
 
+		auto jdata = [&] { std::ifstream file(args[1]); return nlohmann::json::parse(file); }();
+
+		// If key exists, set the global vars;
+		if (jdata.contains(args[2]))
+		{
+			const auto& data = jdata[args[2]];
+			std::cout << "flip\n";
+			global.flip = data["flip"];
+
+			auto wfactor = static_cast<double>(k_frame_width) / static_cast<double>(k_target_width);
+			auto hfactor = static_cast<double>(k_frame_height) / static_cast<double>(k_target_height);
+
+			//std::cout << "conveyor_center_x\n";
+			global.conveyor_center_x = (data["area"]["top"]["x"] + data["area"]["top"]["w"] / 2) * wfactor;
+
+			//std::cout << "conveyor_width\n";
+			global.conveyor_width = (data["area"]["top"]["w"]) * wfactor;
+
+			//std::cout << "conveyor_y1\n";
+			global.conveyor_y1 = data["area"]["top"]["h"] * hfactor;
+
+			//std::cout << "conveyor_y2\n";
+			global.conveyor_y2 = data["area"]["bottom"]["y"] * hfactor;
+			//global.conveyor_x1 = data["top"]["x"] * factor;
+			//std::cout << "done\n";
+		}
+
 		auto cap = [&]
 			{
 				if (strcasecmp(args[4], "usb") == 0)
@@ -129,9 +156,6 @@ int main(int argc, char* args[])
 			case 's': [[fallthrough]];
 			case 'S':
 			{
-				// Save to json;
-				auto jdata = [&] { std::ifstream file(args[1]); return nlohmann::json::parse(file); }();
-
 				// Check if ix / file exists
 				const auto key = args[2];
 				if (jdata.contains(key))

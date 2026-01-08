@@ -150,12 +150,12 @@ namespace eg::bc
 
 		void log(const std::string& text)
 		{
-			if (id_ == 5)
-			{
-				std::ofstream log_file("box_log.txt", std::ios::app);
-				log_file << "[Box " << id_ << "] " << text << std::endl;
-				//std::cout << "[Box " << id_ << "] " << text << std::endl;
-			}
+			//if (id_ == 5)
+			//{
+			//	std::ofstream log_file("box_log.txt", std::ios::app);
+			//	log_file << "[Box " << id_ << "] " << text << std::endl;
+			//	//std::cout << "[Box " << id_ << "] " << text << std::endl;
+			//}
 		}
 
 		BoxStatus update(const cv::Rect& rect, size_t current_loop_frame)
