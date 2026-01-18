@@ -95,6 +95,8 @@ namespace eg::bc
 			cv::CHAIN_APPROX_SIMPLE
 		);
 
+		contours.reserve(contours_all.size());
+
 		for (const auto& c : contours_all)
 		{
 			if (cv::contourArea(c) >= k_min_contour_area)
@@ -131,6 +133,8 @@ namespace eg::bc
 	)
 	{
 		std::vector<cv::Rect> boxes;
+
+		boxes.reserve(contours.size());
 
 		for (const auto& c : contours)
 		{
