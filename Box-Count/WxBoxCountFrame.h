@@ -46,6 +46,7 @@ namespace eg::bc
 		// Master:
 		// Loaded from configs
 
+		ComvisConfig comvis_config_;
 		const std::unordered_map<std::string, Cam> cams_;
 
 		size_t trans_gid_;

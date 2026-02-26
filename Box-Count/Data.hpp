@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Box.hpp"
+#include "MotionDetection.h"
 
 #include <nlohmann/json.hpp>
 #include <string>
@@ -27,6 +28,8 @@ namespace eg::bc
 		cv::Rect top;
 		cv::Rect left;
 		cv::Rect right;
+
+		ComvisConfig config;
 
 		static std::unordered_map<std::string, Cam> load_cams()
 		{
@@ -95,7 +98,23 @@ namespace eg::bc
 						o["area"]["right"]["y"],
 						o["area"]["right"]["w"],
 						o["area"]["right"]["h"]
-					)
+					),
+
+					(
+						not o.contains("comvis") ?
+						ComvisConfig() :
+						ComvisConfig(
+							o["comvis"].value("blur_size", k_blur_size),
+							o["comvis"].value("binarize_threshold", k_binarize_threshold),
+							o["comvis"].value("shadow_delta", k_shadow_delta),
+							o["comvis"].value("min_contour_area", k_min_contour_area),
+							o["comvis"].value("bg_alpha", k_bg_alpha),
+							o["comvis"].value("merge_distance", k_merge_distance),
+							o["comvis"].value("dilate_iter", k_dilate_iter),
+							o["comvis"].value("erode_iter", k_erode_iter),
+							o["comvis"].value("debug_contour", false)
+						)
+						)
 				);
 			}
 

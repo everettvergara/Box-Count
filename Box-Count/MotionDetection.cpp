@@ -8,13 +8,13 @@ namespace eg::bc
 	}
 
 	// 3. Blur
-	void blur_frame(cv::Mat& gray)
+	void blur_frame(const ComvisConfig& config, cv::Mat& gray)
 	{
 		cv::GaussianBlur
 		(
 			gray,
 			gray,
-			cv::Size(k_blur_size, k_blur_size),
+			cv::Size(config.blur_size, config.blur_size),
 			0
 		);
 	}
@@ -26,9 +26,9 @@ namespace eg::bc
 	}
 
 	// 5. Update background
-	void update_background(const cv::Mat& gray, cv::Mat& background)
+	void update_background(const ComvisConfig& config, const cv::Mat& gray, cv::Mat& background)
 	{
-		cv::accumulateWeighted(gray, background, k_bg_alpha);
+		cv::accumulateWeighted(gray, background, config.bg_alpha);
 	}
 
 	// 6. Frame difference
@@ -45,44 +45,44 @@ namespace eg::bc
 	}
 
 	// 7. Shadow suppression (THIS is what you were missing)
-	void suppress_shadows(cv::Mat& diff)
+	void suppress_shadows(const ComvisConfig& config, cv::Mat& diff)
 	{
 		cv::threshold
 		(
 			diff,
 			diff,
-			k_shadow_delta,
+			config.shadow_delta,
 			255,
 			cv::THRESH_TOZERO
 		);
 	}
 
-	// 8. Threshold motion
-	void threshold_motion(const cv::Mat& diff, cv::Mat& thresh)
+	// 8. Threshold pixel color to black and white
+	void binarize_color(const ComvisConfig& config, const cv::Mat& diff, cv::Mat& thresh)
 	{
 		cv::threshold
 		(
 			diff,
 			thresh,
-			k_motion_threshold,
+			config.binarize_threshold,
 			255,
 			cv::THRESH_BINARY
 		);
 	}
 
 	// 9. Morph cleanup
-	void clean_motion_mask(cv::Mat& thresh)
+	void clean_motion_mask(const ComvisConfig& config, cv::Mat& thresh)
 	{
 		//cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 2);
 		//cv::erode(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 1);
 
 		// TODO: iterations must be configurable
-		cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 5);
-		cv::erode(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 1);
+		cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), config.dilate_iter);
+		cv::erode(thresh, thresh, cv::Mat(), cv::Point(-1, -1), config.erode_iter);
 	}
 
 	// 10. Find contours
-	std::vector<std::vector<cv::Point>> find_motion_contours(const cv::Mat& thresh)
+	std::vector<std::vector<cv::Point>> find_motion_contours(const ComvisConfig& config, const cv::Mat& thresh)
 	{
 		std::vector<std::vector<cv::Point>> contours_all;
 		std::vector<std::vector<cv::Point>> contours;
@@ -99,7 +99,7 @@ namespace eg::bc
 
 		for (const auto& c : contours_all)
 		{
-			if (cv::contourArea(c) >= k_min_contour_area)
+			if (cv::contourArea(c) >= config.min_contour_area)
 			{
 				contours.push_back(c);
 			}
@@ -163,7 +163,7 @@ namespace eg::bc
 	}
 
 	std::vector<cv::Rect> merge_boxes
-	(
+	(const ComvisConfig& config,
 		const std::vector<cv::Rect>& input_boxes
 	)
 	{
@@ -181,7 +181,7 @@ namespace eg::bc
 					if
 						(
 							(boxes[i] & boxes[j]).area() > 0 ||
-							boxes_are_close(boxes[i], boxes[j], k_merge_distance)
+							boxes_are_close(boxes[i], boxes[j], config.merge_distance)
 							)
 					{
 						boxes[i] = boxes[i] | boxes[j]; // UNION

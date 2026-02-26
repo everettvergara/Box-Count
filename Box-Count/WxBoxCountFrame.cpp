@@ -181,6 +181,8 @@ namespace eg::bc
 		box_policy_.set_area(BoxPolicyArea::Top, cv::Rect(cam.top.x, cam.top.y, cam.top.width, cam.top.height));
 		box_policy_.set_area(BoxPolicyArea::Left, cv::Rect(cam.left.x, cam.left.y, cam.left.width, cam.left.height));
 		box_policy_.set_area(BoxPolicyArea::Right, cv::Rect(cam.right.x, cam.right.y, cam.right.width, cam.right.height));
+
+		comvis_config_ = cam.config;
 	}
 
 	void WxBoxCountFrame::on_init_cam_list_()
@@ -463,7 +465,7 @@ namespace eg::bc
 
 			cv::Mat gray;
 			convert_to_grayscale(frame, gray);
-			blur_frame(gray);
+			blur_frame(comvis_config_, gray);
 
 			if (not back_init)
 			{
@@ -472,17 +474,17 @@ namespace eg::bc
 				continue;
 			}
 
-			update_background(gray, background);
+			update_background(comvis_config_, gray, background);
 
 			cv::Mat diff;
 			compute_frame_difference(gray, background, diff);
-			suppress_shadows(diff);
+			suppress_shadows(comvis_config_, diff);
 
-			cv::Mat thresh;
-			threshold_motion(diff, thresh);
-			clean_motion_mask(thresh);
+			cv::Mat binarized;
+			binarize_color(comvis_config_, diff, binarized);
+			clean_motion_mask(comvis_config_, binarized);
 
-			auto contours = find_motion_contours(thresh);
+			auto contours = find_motion_contours(comvis_config_, binarized);
 			auto box_contours = contours_to_boxes(contours);
 
 			// TODO: Any box_contours inside left and right policy must be removed before merging
@@ -510,7 +512,7 @@ namespace eg::bc
 				cleaned_box_contours.push_back(box);
 			}
 
-			auto merged_boxes = merge_boxes(cleaned_box_contours);
+			auto merged_boxes = merge_boxes(comvis_config_, cleaned_box_contours);
 
 			// TODO: Add to Debug Mode
 
@@ -528,8 +530,8 @@ namespace eg::bc
 			//}
 
 			//cv::imwrite(std::format("out/debug/box_contours_{}.png", ctr++), thresh);
-			//cv::imshow("Box Countours", thresh);
-			//cv::waitKey(1);
+			cv::imshow("Box Countours Debugger", binarized);
+			cv::waitKey(1);
 
 			{
 				std::lock_guard lock(counting_mutex_);
@@ -539,7 +541,7 @@ namespace eg::bc
 			counting_cv_.notify_one();
 		}
 
-		//cv::destroyWindow("Box Countours");
+		cv::destroyWindow("Box Countours");
 	}
 
 	void WxBoxCountFrame::counting_loop_()
