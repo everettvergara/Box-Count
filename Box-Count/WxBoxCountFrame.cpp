@@ -234,6 +234,7 @@ namespace eg::bc
 		signal_stop_ = false;
 		live_preview_ctr_ = 0;
 		debug_preview_ctr_ = 0;
+
 		cam_thread_ = std::thread(&WxBoxCountFrame::cam_loop_, this);
 		motion_thread_ = std::thread(&WxBoxCountFrame::motion_loop_, this);
 		counting_thread_ = std::thread(&WxBoxCountFrame::counting_loop_, this);

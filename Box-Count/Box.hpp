@@ -84,7 +84,6 @@ namespace eg::bc
 			rects_({ { BoxPolicyArea::Bottom, cv::Rect{} }, { BoxPolicyArea::Middle, cv::Rect{} }, { BoxPolicyArea::Top, cv::Rect{} }, { BoxPolicyArea::Left, cv::Rect{} }, { BoxPolicyArea::Right, cv::Rect{} } })
 		{
 		}
-
 		BoxPolicyArea area_of(const cv::Point& center) const
 		{
 			if (rects_.at(BoxPolicyArea::Bottom).contains(center)) return BoxPolicyArea::Bottom;
@@ -94,19 +93,18 @@ namespace eg::bc
 			else if (rects_.at(BoxPolicyArea::Right).contains(center)) return BoxPolicyArea::Right;
 			return BoxPolicyArea::Unknown;
 		}
-
 		void set_area(BoxPolicyArea area, const cv::Rect& rect)
 		{
 			assert(area >= BoxPolicyArea::Bottom and area <= BoxPolicyArea::Right);
 			rects_[area] = rect;
 		}
-
 		const std::unordered_map<BoxPolicyArea, cv::Rect>& rects() const
 		{
 			return rects_;
 		}
 
 	private:
+
 		std::unordered_map<BoxPolicyArea, cv::Rect> rects_;
 	};
 
@@ -137,17 +135,14 @@ namespace eg::bc
 			center_points_.push_back(center);
 			status_ = update_status_(center, loop_frame);
 		}
-
 		[[nodiscard]] size_t id() const
 		{
 			return id_;
 		}
-
 		[[nodiscard]] time_t elapsed_time() const
 		{
 			return updated_at_ - created_at_;
 		}
-
 		void log(const std::string& text)
 		{
 			//if (id_ == 5)
@@ -157,7 +152,6 @@ namespace eg::bc
 			//	//std::cout << "[Box " << id_ << "] " << text << std::endl;
 			//}
 		}
-
 		BoxStatus update(const cv::Rect& rect, size_t current_loop_frame)
 		{
 			updated_rect_ = rect;
@@ -173,32 +167,26 @@ namespace eg::bc
 			center_points_.push_back(center);
 			return update_status_(center, current_loop_frame);
 		}
-
 		const std::vector<cv::Point>& center_points() const
 		{
 			return center_points_;
 		}
-
 		[[nodiscard]] const cv::Rect& created_rect() const
 		{
 			return created_rect_;
 		}
-
 		[[nodiscard]] const cv::Rect& updated_rect() const
 		{
 			return updated_rect_;
 		}
-
 		[[nodiscard]] size_t last_loop_frame() const
 		{
 			return loop_frame_;
 		}
-
 		[[nodiscard]] BoxStatus status() const
 		{
 			return status_;
 		}
-
 		[[nodiscard]] std::string status_name() const
 		{
 			switch (status_)
@@ -284,104 +272,6 @@ namespace eg::bc
 					status_ = BoxStatus::Counted;
 					return status_;
 				}
-
-				//// Counted: Bottom to Middle;
-				//if (area_history_[0] == BoxPolicyArea::Middle and
-				//	area_history_[1] == BoxPolicyArea::Top)
-				//{
-				//	status_ = BoxStatus::Counted;
-				//	return status_;
-				//}
-
-				// Rejected:
-				// Bottom to Left or
-				// Bottom to Right
-
-				if (area_history_[0] == BoxPolicyArea::Bottom and (
-					area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Rejected;
-					return status_;
-				}
-
-				// Return:
-				// Top to Left or
-				// Top to Right
-
-				if (area_history_[0] == BoxPolicyArea::Top and (
-					area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Returned;
-					return status_;
-				}
-
-				if (area_history_[0] == BoxPolicyArea::Top and
-					area_history_[1] == BoxPolicyArea::Middle)
-				{
-					status_ = BoxStatus::Returned;
-					return status_;
-				}
-			}
-
-			if (area_history_.size() == 3)
-			{
-				// Counted:
-				// Left to Middle to Top
-				// Right to Middle to Top
-				// Left to Bottom to Middle
-				// Right to Bottom to Middle
-
-				if (area_history_[1] == BoxPolicyArea::Middle and
-					area_history_[2] == BoxPolicyArea::Top and
-					(area_history_[0] == BoxPolicyArea::Left or area_history_[0] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Counted;
-					return status_;
-				}
-
-				if (area_history_[0] == BoxPolicyArea::Bottom and
-					area_history_[1] == BoxPolicyArea::Middle and
-					area_history_[2] == BoxPolicyArea::Top)
-				{
-					status_ = BoxStatus::Counted;
-					return status_;
-				}
-
-				// Rejected:
-				// Bottom to Middle to Left or
-				// Bottom to Middle to Right
-
-				if (area_history_[0] == BoxPolicyArea::Bottom and
-					area_history_[1] == BoxPolicyArea::Middle and
-					(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Rejected;
-					return status_;
-				}
-
-				// Return:
-				// Top to Middle to Left or
-				// Top to Middle to Right
-
-				if (area_history_[0] == BoxPolicyArea::Top and
-					area_history_[1] == BoxPolicyArea::Middle and
-					(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Returned;
-					return status_;
-				}
-			}
-
-			if (area_history_.size() == 4)
-			{
-				if (area_history_[0] == BoxPolicyArea::Bottom and
-					area_history_[1] == BoxPolicyArea::Middle and
-					area_history_[2] == BoxPolicyArea::Top and
-					(area_history_[3] == BoxPolicyArea::Left or area_history_[3] == BoxPolicyArea::Right))
-				{
-					status_ = BoxStatus::Rejected;
-					return status_;
-				}
 			}
 
 			if (should_expire(current_loop_frame))
@@ -393,6 +283,179 @@ namespace eg::bc
 			return status_;
 		}
 
+		/*
+				[[nodiscard]] BoxStatus update_status_(const cv::Point& center, size_t current_loop_frame)
+				{
+					// If it's discarded, it is assumed that the dev already got the previous status and
+					// did some actionable items about it
+					//if (status_ == BoxStatus::Discarded)
+					//{
+					//	return status_;
+					//}
+
+					//if (status_ == BoxStatus::Counted or status_ == BoxStatus::Rejected or status_ == BoxStatus::Returned)
+					//{
+					//	//status_ = BoxStatus::Discarded;
+					//	return status_;
+					//}
+
+					// Prep with BoxStatus::Unknown status if
+					// it's the first time
+
+					if (area_history_.empty())
+					{
+						log(std::format("0. area_history_ is empty, adding Unknown"));
+						area_history_.push_back(BoxPolicyArea::Unknown);
+					}
+
+					log(std::format("1. center {}, {}", center.x, center.y));
+
+					auto new_area = policy_.area_of(center);
+					auto last_area = area_history_.back();
+
+					if (last_area == BoxPolicyArea::Unknown and
+						new_area not_eq BoxPolicyArea::Unknown)
+					{
+						area_history_.pop_back();
+						area_history_.push_back(new_area);
+						log(std::format("2. area_history_ {}", static_cast<int>(new_area)));
+					}
+
+					last_area = area_history_.back();
+					log(std::format("3. last_area_ {}", static_cast<int>(last_area)));
+
+					if (new_area not_eq last_area)
+					{
+						area_history_.push_back(new_area);
+						log(std::format("4. last_area_ {} -> new area{}", static_cast<int>(last_area), static_cast<int>(new_area)));
+					}
+
+					// Determine status based on area history
+					log(std::format("5. area_history_size_ {}", area_history_.size()));
+					log("5x area_history_elements_:");
+					for (size_t i = 0; i < area_history_.size(); ++i)
+					{
+						log(std::format("   - [{}] {}", i, static_cast<int>(area_history_[i])));
+					}
+
+					if (area_history_.size() == 2)
+					{
+						// Counted: Bottom to Middle;
+						if (area_history_[0] == BoxPolicyArea::Bottom and
+							area_history_[1] == BoxPolicyArea::Middle)
+						{
+							status_ = BoxStatus::Counted;
+							return status_;
+						}
+
+						//// Counted: Bottom to Middle;
+						//if (area_history_[0] == BoxPolicyArea::Middle and
+						//	area_history_[1] == BoxPolicyArea::Top)
+						//{
+						//	status_ = BoxStatus::Counted;
+						//	return status_;
+						//}
+
+						// Rejected:
+						// Bottom to Left or
+						// Bottom to Right
+
+						if (area_history_[0] == BoxPolicyArea::Bottom and (
+							area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Rejected;
+							return status_;
+						}
+
+						// Return:
+						// Top to Left or
+						// Top to Right
+
+						if (area_history_[0] == BoxPolicyArea::Top and (
+							area_history_[1] == BoxPolicyArea::Left or area_history_[1] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Returned;
+							return status_;
+						}
+
+						if (area_history_[0] == BoxPolicyArea::Top and
+							area_history_[1] == BoxPolicyArea::Middle)
+						{
+							status_ = BoxStatus::Returned;
+							return status_;
+						}
+					}
+
+					if (area_history_.size() == 3)
+					{
+						// Counted:
+						// Left to Middle to Top
+						// Right to Middle to Top
+						// Left to Bottom to Middle
+						// Right to Bottom to Middle
+
+						if (area_history_[1] == BoxPolicyArea::Middle and
+							area_history_[2] == BoxPolicyArea::Top and
+							(area_history_[0] == BoxPolicyArea::Left or area_history_[0] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Counted;
+							return status_;
+						}
+
+						if (area_history_[0] == BoxPolicyArea::Bottom and
+							area_history_[1] == BoxPolicyArea::Middle and
+							area_history_[2] == BoxPolicyArea::Top)
+						{
+							status_ = BoxStatus::Counted;
+							return status_;
+						}
+
+						// Rejected:
+						// Bottom to Middle to Left or
+						// Bottom to Middle to Right
+
+						if (area_history_[0] == BoxPolicyArea::Bottom and
+							area_history_[1] == BoxPolicyArea::Middle and
+							(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Rejected;
+							return status_;
+						}
+
+						// Return:
+						// Top to Middle to Left or
+						// Top to Middle to Right
+
+						if (area_history_[0] == BoxPolicyArea::Top and
+							area_history_[1] == BoxPolicyArea::Middle and
+							(area_history_[2] == BoxPolicyArea::Left or area_history_[2] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Returned;
+							return status_;
+						}
+					}
+
+					if (area_history_.size() == 4)
+					{
+						if (area_history_[0] == BoxPolicyArea::Bottom and
+							area_history_[1] == BoxPolicyArea::Middle and
+							area_history_[2] == BoxPolicyArea::Top and
+							(area_history_[3] == BoxPolicyArea::Left or area_history_[3] == BoxPolicyArea::Right))
+						{
+							status_ = BoxStatus::Rejected;
+							return status_;
+						}
+					}
+
+					if (should_expire(current_loop_frame))
+					{
+						status_ = BoxStatus::Unknown;
+						return status_;
+					}
+
+					return status_;
+				}
+				*/
 		cv::Point last_center_point() const
 		{
 			return center_points_.back();
