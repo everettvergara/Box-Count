@@ -51,6 +51,7 @@ namespace eg::bc
 
 		size_t trans_gid_;
 		size_t live_preview_ctr_;
+		size_t debug_preview_ctr_;
 
 		// Trans
 		BoxPolicy  box_policy_;
@@ -114,5 +115,6 @@ namespace eg::bc
 
 		// TODO: Take out from the class
 		wxBitmap cv_mat_to_wx_bitmap_(const cv::Mat& input);
+		wxBitmap cv_gray_mat_to_wx_bitmap_(const cv::Mat& input);
 	};
 }

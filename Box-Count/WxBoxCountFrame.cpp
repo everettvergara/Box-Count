@@ -45,6 +45,7 @@ namespace eg::bc
 		cams_(Cam::load_cams()),
 		trans_gid_(BoxCountTrans::load_gid()),
 		live_preview_ctr_(0),
+		debug_preview_ctr_(0),
 
 		// TODO: 128 must be configurable
 		frame_queue_(128),
@@ -138,7 +139,7 @@ namespace eg::bc
 		}
 
 		bitmap_preview->SetBitmap(black_bitmap);
-		//bitmap_preview->Refresh();
+		bitmap_debug->SetBitmap(black_bitmap);
 	}
 
 	void WxBoxCountFrame::on_init_icon_()
@@ -231,7 +232,8 @@ namespace eg::bc
 	void WxBoxCountFrame::start_threads_()
 	{
 		signal_stop_ = false;
-
+		live_preview_ctr_ = 0;
+		debug_preview_ctr_ = 0;
 		cam_thread_ = std::thread(&WxBoxCountFrame::cam_loop_, this);
 		motion_thread_ = std::thread(&WxBoxCountFrame::motion_loop_, this);
 		counting_thread_ = std::thread(&WxBoxCountFrame::counting_loop_, this);
@@ -346,6 +348,19 @@ namespace eg::bc
 
 		cv::Mat rgb;
 		cv::cvtColor(input, rgb, cv::COLOR_BGR2RGB);
+
+		wxImage image(rgb.cols, rgb.rows);
+		std::memcpy(image.GetData(), rgb.data, rgb.total() * 3);
+		return wxBitmap(image);
+	}
+
+	wxBitmap WxBoxCountFrame::cv_gray_mat_to_wx_bitmap_(const cv::Mat& input)
+	{
+		assert(not input.empty());
+		assert(input.type() == CV_8UC1);
+
+		cv::Mat rgb;
+		cv::cvtColor(input, rgb, cv::COLOR_GRAY2RGB);
 
 		wxImage image(rgb.cols, rgb.rows);
 		std::memcpy(image.GetData(), rgb.data, rgb.total() * 3);
@@ -530,8 +545,16 @@ namespace eg::bc
 			//}
 
 			//cv::imwrite(std::format("out/debug/box_contours_{}.png", ctr++), thresh);
-			cv::imshow("Box Countours Debugger", binarized);
-			cv::waitKey(1);
+			//cv::imshow("Box Countours Debugger", binarized);
+			//cv::waitKey(1);
+			if (debug_preview_ctr_++ % 2 == 0)
+			{
+				this->CallAfter([this, frame = binarized]()
+					{
+						auto bitmap = cv_gray_mat_to_wx_bitmap_(frame);
+						bitmap_debug->SetBitmap(bitmap);
+					});
+			}
 
 			{
 				std::lock_guard lock(counting_mutex_);
@@ -541,7 +564,7 @@ namespace eg::bc
 			counting_cv_.notify_one();
 		}
 
-		cv::destroyWindow("Box Countours");
+		//cv::destroyWindow("Box Countours");
 	}
 
 	void WxBoxCountFrame::counting_loop_()

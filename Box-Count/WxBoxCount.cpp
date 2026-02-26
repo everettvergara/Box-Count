@@ -167,15 +167,27 @@ BoxCountFrame::BoxCountFrame( wxWindow* parent, wxWindowID id, const wxString& t
 	m_staticText96->Wrap( -1 );
 	sizer_live->Add( m_staticText96, 0, wxALL, 5 );
 
-	bitmap_preview = new wxStaticBitmap( group_live->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 320,200 ), 0 );
-	sizer_live->Add( bitmap_preview, 0, wxALL, 5 );
+	wxBoxSizer* bSizer7;
+	bSizer7 = new wxBoxSizer( wxHORIZONTAL );
 
-	m_staticText97 = new wxStaticText( group_live->GetStaticBox(), wxID_ANY, _("Select Camera Index:"), wxDefaultPosition, wxDefaultSize, 0 );
+	bitmap_preview = new wxStaticBitmap( group_live->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 320,200 ), 0 );
+	bSizer7->Add( bitmap_preview, 0, wxALL, 5 );
+
+
+	bSizer7->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	bitmap_debug = new wxStaticBitmap( group_live->GetStaticBox(), wxID_ANY, wxNullBitmap, wxDefaultPosition, wxSize( 320,200 ), 0 );
+	bSizer7->Add( bitmap_debug, 0, wxALL, 5 );
+
+
+	sizer_live->Add( bSizer7, 1, wxEXPAND, 5 );
+
+	m_staticText97 = new wxStaticText( group_live->GetStaticBox(), wxID_ANY, _("Select Video Capture Source:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText97->Wrap( -1 );
 	sizer_live->Add( m_staticText97, 0, wxALL, 5 );
 
 	wxArrayString choice_cameraChoices;
-	choice_camera = new wxChoice( group_live->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, choice_cameraChoices, 0 );
+	choice_camera = new wxChoice( group_live->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxSize( 320,-1 ), choice_cameraChoices, 0 );
 	choice_camera->SetSelection( 0 );
 	sizer_live->Add( choice_camera, 0, wxALL, 5 );
 

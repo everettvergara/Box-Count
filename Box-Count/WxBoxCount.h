@@ -37,53 +37,51 @@
 ///////////////////////////////////////////////////////////////////////////////
 class BoxCountFrame : public wxFrame
 {
-	private:
+private:
 
-	protected:
-		wxStaticText* m_staticText89;
-		wxChoice* choice_doc_type;
-		wxStaticText* m_staticText87;
-		wxTextCtrl* text_doc_no;
-		wxStaticText* m_staticText88;
-		wxDatePickerCtrl* picker_doc_date;
-		wxStaticText* m_staticText90;
-		wxTextCtrl* text_start_time;
-		wxStaticText* m_staticText11;
-		wxTextCtrl* text_elapsed;
-		wxStaticText* m_staticText91;
-		wxTextCtrl* text_end_time;
-		wxStaticText* m_staticText92;
-		wxTextCtrl* text_box_count;
-		wxStaticBitmap* bitmap_last_box_count;
-		wxStaticText* m_staticText93;
-		wxTextCtrl* text_reject_count;
-		wxStaticBitmap* bitmap_last_reject_count;
-		wxStaticText* m_staticText94;
-		wxTextCtrl* text_return_count;
-		wxStaticBitmap* bitmap_last_return_count;
-		wxStaticText* m_staticText96;
-		wxStaticBitmap* bitmap_preview;
-		wxStaticText* m_staticText97;
-		wxChoice* choice_camera;
-		wxCheckBox* check_show_track_history;
-		wxCheckBox* check_show_roi;
-		wxButton* button_new;
-		wxButton* button_start;
-		wxButton* button_stop;
-		wxButton* button_close;
+protected:
+	wxStaticText* m_staticText89;
+	wxChoice* choice_doc_type;
+	wxStaticText* m_staticText87;
+	wxTextCtrl* text_doc_no;
+	wxStaticText* m_staticText88;
+	wxDatePickerCtrl* picker_doc_date;
+	wxStaticText* m_staticText90;
+	wxTextCtrl* text_start_time;
+	wxStaticText* m_staticText11;
+	wxTextCtrl* text_elapsed;
+	wxStaticText* m_staticText91;
+	wxTextCtrl* text_end_time;
+	wxStaticText* m_staticText92;
+	wxTextCtrl* text_box_count;
+	wxStaticBitmap* bitmap_last_box_count;
+	wxStaticText* m_staticText93;
+	wxTextCtrl* text_reject_count;
+	wxStaticBitmap* bitmap_last_reject_count;
+	wxStaticText* m_staticText94;
+	wxTextCtrl* text_return_count;
+	wxStaticBitmap* bitmap_last_return_count;
+	wxStaticText* m_staticText96;
+	wxStaticBitmap* bitmap_preview;
+	wxStaticBitmap* bitmap_debug;
+	wxStaticText* m_staticText97;
+	wxChoice* choice_camera;
+	wxCheckBox* check_show_track_history;
+	wxCheckBox* check_show_roi;
+	wxButton* button_new;
+	wxButton* button_start;
+	wxButton* button_stop;
+	wxButton* button_close;
 
-		// Virtual event handlers, override them in your derived class
-		virtual void on_button_new_( wxCommandEvent& event ) { event.Skip(); }
-		virtual void on_button_start_( wxCommandEvent& event ) { event.Skip(); }
-		virtual void on_button_stop_( wxCommandEvent& event ) { event.Skip(); }
-		virtual void on_button_close_( wxCommandEvent& event ) { event.Skip(); }
+	// Virtual event handlers, override them in your derived class
+	virtual void on_button_new_(wxCommandEvent& event) { event.Skip(); }
+	virtual void on_button_start_(wxCommandEvent& event) { event.Skip(); }
+	virtual void on_button_stop_(wxCommandEvent& event) { event.Skip(); }
+	virtual void on_button_close_(wxCommandEvent& event) { event.Skip(); }
 
+public:
 
-	public:
+	BoxCountFrame(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Box Count"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(1280, 550), long style = wxCAPTION | wxSYSTEM_MENU | wxTAB_TRAVERSAL);
 
-		BoxCountFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Box Count"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 900,550 ), long style = wxCAPTION|wxSYSTEM_MENU|wxTAB_TRAVERSAL );
-
-		~BoxCountFrame();
-
+	~BoxCountFrame();
 };
-
