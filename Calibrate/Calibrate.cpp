@@ -1,3 +1,4 @@
+#include "Box-Count/MotionDetection.h"
 #include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
 
@@ -199,6 +200,34 @@ int main(int argc, char* args[])
 				area["middle"]["h"] = static_cast<int>((global.conveyor_y2 - global.conveyor_y1) * yframe_factor);
 
 				jdata[key]["area"] = area;
+
+				if (not jdata[key].contains("comvis"))
+				{
+					jdata[key]["comvis"] = nlohmann::json::object();
+					jdata[key]["comvis"]["blur_size"] = 5;
+					jdata[key]["comvis"]["binarize_threshold"] = 50;
+					jdata[key]["comvis"]["shadow_delta"] = 30;
+					jdata[key]["comvis"]["min_contour_area"] = 500;
+					jdata[key]["comvis"]["bg_alpha"] = 0.5;
+					jdata[key]["comvis"]["merge_distance"] = 10;
+					jdata[key]["comvis"]["dilate_iter"] = 2;
+					jdata[key]["comvis"]["erode_iter"] = 2;
+					jdata[key]["comvis"]["debug_contour"] = false;
+				}
+
+				if (not jdata[key].contains("comvis-notes"))
+				{
+					jdata[key]["comvis-notes"] = nlohmann::json::object();
+					jdata[key]["comvis-notes"]["blur_size"] = "(pixel) Average outs the color of neighboring pixels";
+					jdata[key]["comvis-notes"]["binarize_threshold"] = "(0 - 255) Converts certain Grayscale image image to Black and White at a certain threshold ";
+					jdata[key]["comvis-notes"]["shadow_delta"] = "(0 - 255) Suppresses low-intensity changes in Grayscale image to reduce noise";
+					jdata[key]["comvis-notes"]["min_contour_area"] = "(pixel) Minimum area of contour to be considered as object";
+					jdata[key]["comvis-notes"]["merge_distance"] = "(pixel) consider blobs as the same if cx,cy are within this distance";
+					jdata[key]["comvis-notes"]["bg_alpha"] = "0.0 - 1.0: Scale to leave traces of pixels behind when the object moves. Lower value (i.e. 0.02) - leaves long traces of pixels";
+					jdata[key]["comvis-notes"]["dilate_iter"] = "# of iter: bleeds blob pixels so it connects with other blobs";
+					jdata[key]["comvis-notes"]["erode_iter"] = "# of iter: erodes edges of blobs to undo bleeding without disconnecting already connected blobs ... (most of the time)";
+				}
+
 				std::ofstream file_out(args[1]);
 				file_out << jdata.dump(4);
 				is_exit = true;
