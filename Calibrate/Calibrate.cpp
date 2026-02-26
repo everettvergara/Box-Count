@@ -158,9 +158,23 @@ int main(int argc, char* args[])
 			case 'S':
 			{
 				// Check if ix / file exists
+
 				const auto key = args[2];
+				auto comvisdata = nlohmann::json::object();
+				auto comvisnotes = nlohmann::json::object();
+
 				if (jdata.contains(key))
 				{
+					if (jdata[key].contains("comvis"))
+					{
+						comvisdata = jdata[key]["comvis"];
+					}
+
+					if (jdata[key].contains("comvis-notes"))
+					{
+						comvisnotes = jdata[key]["comvis-notes"];
+					}
+
 					jdata.erase(key);
 				}
 
@@ -201,21 +215,29 @@ int main(int argc, char* args[])
 
 				jdata[key]["area"] = area;
 
-				if (not jdata[key].contains("comvis"))
+				if (not comvisdata.empty())
+				{
+					jdata[key]["comvis"] = comvisdata;
+				}
+				else
 				{
 					jdata[key]["comvis"] = nlohmann::json::object();
-					jdata[key]["comvis"]["blur_size"] = 5;
-					jdata[key]["comvis"]["binarize_threshold"] = 50;
+					jdata[key]["comvis"]["blur_size"] = 21;
+					jdata[key]["comvis"]["binarize_threshold"] = 25;
 					jdata[key]["comvis"]["shadow_delta"] = 30;
-					jdata[key]["comvis"]["min_contour_area"] = 500;
-					jdata[key]["comvis"]["bg_alpha"] = 0.5;
+					jdata[key]["comvis"]["min_contour_area"] = 50;
+					jdata[key]["comvis"]["bg_alpha"] = 0.1;
 					jdata[key]["comvis"]["merge_distance"] = 10;
-					jdata[key]["comvis"]["dilate_iter"] = 2;
-					jdata[key]["comvis"]["erode_iter"] = 2;
+					jdata[key]["comvis"]["dilate_iter"] = 13;
+					jdata[key]["comvis"]["erode_iter"] = 1;
 					jdata[key]["comvis"]["debug_contour"] = false;
 				}
 
-				if (not jdata[key].contains("comvis-notes"))
+				if (not comvisnotes.empty())
+				{
+					jdata[key]["comvis-notes"] = comvisnotes;
+				}
+				else
 				{
 					jdata[key]["comvis-notes"] = nlohmann::json::object();
 					jdata[key]["comvis-notes"]["blur_size"] = "(pixel) Average outs the color of neighboring pixels";
